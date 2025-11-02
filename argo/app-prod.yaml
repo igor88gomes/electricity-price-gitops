@@ -1,0 +1,19 @@
+# Prod: endast SemVer-releaser, manuell sync
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: electricity-prod
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/igor88gomes/electricity-price-gitops.git
+    targetRevision: main
+    path: base
+    helm:
+      valueFiles:
+        - ../environments/prod/values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: electricity-prod
+  syncPolicy: {}

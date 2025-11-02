@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "electricity.fullname" . }}
+  labels:
+    app.kubernetes.io/name: electricity-price
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app.kubernetes.io/name: electricity-price
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: http

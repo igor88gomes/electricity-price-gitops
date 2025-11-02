@@ -1,0 +1,7 @@
+# Dev: täta deploys, tag sätts av CI (dev-<sha>)
+image:
+  repository: ghcr.io/igor88gomes/electricity-price
+  tag: dev-LOCAL
+resources:
+  requests: { cpu: 50m, memory: 128Mi }
+  limits:   { cpu: 250m, memory: 256Mi }

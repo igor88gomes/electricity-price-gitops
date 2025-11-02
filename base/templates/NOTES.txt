@@ -1,0 +1,3 @@
+1. Applikationen exponeras som ClusterIP på port {{ .Values.service.port }}.
+2. Prova readiness:   kubectl -n <ns> exec -it <pod> -- curl -s localhost:{{ .Values.service.port }}{{ .Values.probes.readiness.path }}
+3. Metrik (Prometheus): aktiverat via ServiceMonitor om serviceMonitor.enabled=true.

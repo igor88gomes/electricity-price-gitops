@@ -1,0 +1,7 @@
+# Staging: promotion från DEV, samma image (staging-<sha>)
+image:
+  repository: ghcr.io/igor88gomes/electricity-price
+  tag: staging-LOCAL
+resources:
+  requests: { cpu: 75m, memory: 192Mi }
+  limits:   { cpu: 300m, memory: 384Mi }

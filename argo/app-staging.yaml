@@ -1,0 +1,19 @@
+# Staging: manuell promotion via PR (ingen auto-sync)
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: electricity-staging
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/igor88gomes/electricity-price-gitops.git
+    targetRevision: main
+    path: base
+    helm:
+      valueFiles:
+        - ../environments/staging/values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: electricity-staging
+  syncPolicy: {}

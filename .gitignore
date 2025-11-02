@@ -1,0 +1,5 @@
+# Build/artefakter lokalt
+*.tgz
+*.log
+.DS_Store
+Thumbs.db

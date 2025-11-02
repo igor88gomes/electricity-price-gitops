@@ -1,0 +1,16 @@
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "electricity.fullname" . }}
+  labels:
+    app.kubernetes.io/name: electricity-price
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: electricity-price
+  endpoints:
+    - port: {{ .Values.serviceMonitor.portName }}
+      path: {{ .Values.serviceMonitor.path }}
+      interval: {{ .Values.serviceMonitor.interval }}
+{{- end }}

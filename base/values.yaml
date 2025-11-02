@@ -1,0 +1,32 @@
+# --- Basvärden som kan delas mellan miljöer ---
+image:
+  repository: ghcr.io/igor88gomes/electricity-price  # ändras via env-values
+  tag: dev-LOCAL                                     # pipelines skriver om detta
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 8000
+
+# Probes – Flask har /healthz och /readyz
+probes:
+  readiness:
+    path: /readyz
+  liveness:
+    path: /healthz
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+serviceMonitor:
+  enabled: true
+  path: /metrics
+  interval: 30s
+  portName: http
