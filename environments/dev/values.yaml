@@ -2,6 +2,7 @@
 image:
   repository: ghcr.io/igor88gomes/electricity-price
   tag: dev-LOCAL
+  digest: ""  # sätts av CI till sha256:<...> för exakt artefakt
 resources:
   requests: { cpu: 50m, memory: 128Mi }
   limits:   { cpu: 250m, memory: 256Mi }

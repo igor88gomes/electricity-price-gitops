@@ -2,6 +2,7 @@
 image:
   repository: ghcr.io/igor88gomes/electricity-price
   tag: v0.0.0
+  digest: ""  # sätts endast vid PROD-release (sha256:<...>)
 resources:
   requests: { cpu: 100m, memory: 256Mi }
   limits:   { cpu: 400m, memory: 512Mi }
