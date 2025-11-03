@@ -1,7 +1,8 @@
-# --- Basvärden som kan delas mellan miljöer ---
+# Basvärden som kan delas mellan miljöer 
 image:
   repository: ghcr.io/igor88gomes/electricity-price  # ändras via env-values
   tag: dev-LOCAL                                     # pipelines skriver om detta
+  digest: ""                                         # lämna tomt om tag används; sätt sha256:<...> vid promotion
   pullPolicy: IfNotPresent
 
 replicaCount: 1
