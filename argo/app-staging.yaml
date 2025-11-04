@@ -16,4 +16,11 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: electricity-staging
-  syncPolicy: {}
+  # Autosync avstängd (manuell promotion). Skapa ns automatiskt vid tomt kluster.
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+
+
+
+  
