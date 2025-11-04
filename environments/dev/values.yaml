@@ -3,6 +3,23 @@ image:
   repository: ghcr.io/igor88gomes/electricity-price
   tag: dev-1ffc8d2
   digest: ""  # sätts av CI till sha256:<...> för exakt artefakt
+
+# Behåll basens portsättning (service.name/http, port/targetPort=8000)
+# Om man vill överskrida specifikt för DEV, avkommentera nedan:
+# service:
+#   name: http
+#   port: 8000
+#   targetPort: 8000
+
 resources:
-  requests: { cpu: 50m, memory: 128Mi }
-  limits:   { cpu: 250m, memory: 256Mi }
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  # Om man vill ha gna limits i DEV
+  # limits:
+  #   cpu: 200m
+  #   memory: 256Mi
+
+# TODO: Slå på när du Prometheus Operator redo i klustret
+# serviceMonitor:
+#   enabled: true

@@ -1,4 +1,4 @@
-# Basvärden som kan delas mellan miljöer 
+# Basvärden som kan delas mellan miljöer
 image:
   repository: ghcr.io/igor88gomes/electricity-price  # ändras via env-values
   tag: dev-LOCAL                                     # pipelines skriver om detta
@@ -9,14 +9,24 @@ replicaCount: 1
 
 service:
   type: ClusterIP
-  port: 8000
+  name: http                 # Namngiven port som används av probes/ServiceMonitor
+  port: 8000                 # Extern port på Service
+  targetPort: 8000           # Måste matcha containerPort i Deployment
 
-# Probes – Flask har /healthz och /readyz
+# Probes – Flask/Gunicorn har /healthz och /readyz
 probes:
   readiness:
     path: /readyz
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 5
   liveness:
     path: /healthz
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 5
 
 resources:
   requests:
@@ -26,8 +36,12 @@ resources:
     cpu: 200m
     memory: 256Mi
 
-serviceMonitor:
-  enabled: true
+serviceMonitor:                
+  enabled: false                # TODO: Sätt true när Prometheus Operator/CRD är installerad
   path: /metrics
   interval: 30s
-  portName: http
+  portName: http                # Måste matcha service.name ovan
+  scrapeTimeout: 10s
+  # additionalLabels kan krävas beroende på Prometheus' selector (t.ex. release: kube-prometheus-stack)
+  # additionalLabels:
+  #   release: kube-prometheus-stack

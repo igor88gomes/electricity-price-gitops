@@ -24,14 +24,25 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              # ContainerPort ska matcha den faktiska porten som processen lyssnar på.
+              # Läser från service.targetPort så att probes/Service pekar på samma port.
+              containerPort: {{ .Values.service.targetPort }}
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.readiness.path }}
+              # Använd den namngivna porten "http" för stabil uppslagning.
               port: http
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds | default 5 }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds | default 3 }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold | default 5 }}
           livenessProbe:
             httpGet:
               path: {{ .Values.probes.liveness.path }}
               port: http
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds | default 5 }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds | default 3 }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold | default 5 }}
           resources:
 {{- toYaml .Values.resources | nindent 12 }}
