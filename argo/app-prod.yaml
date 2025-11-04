@@ -8,7 +8,8 @@ spec:
   project: default
   source:
     repoURL: https://github.com/igor88gomes/electricity-price-gitops.git
-    targetRevision: main
+    # Peka på en SemVer-tag (t.ex. v1.2.3) för reproducerbara releaser – inte 'main'.
+    targetRevision: v0.0.0
     path: base
     helm:
       valueFiles:
@@ -16,4 +17,7 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: electricity-prod
-  syncPolicy: {}
+  # Manuell promotion/sync i PROD. Skapa namespace automatiskt vid tomt kluster.
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
