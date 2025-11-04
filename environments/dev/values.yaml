@@ -1,7 +1,7 @@
 # Dev: täta deploys, tag sätts av CI (dev-<sha>)
 image:
   repository: ghcr.io/igor88gomes/electricity-price
-  tag: dev-LOCAL
+  tag: dev-1ffc8d2
   digest: ""  # sätts av CI till sha256:<...> för exakt artefakt
 resources:
   requests: { cpu: 50m, memory: 128Mi }
