@@ -5,12 +5,19 @@ metadata:
   name: {{ include "electricity.fullname" . }}
   labels:
     app.kubernetes.io/name: electricity-price
+    {{- /* Svenska: extra etiketter för att matcha Prometheus' selector (t.ex. release: kube-prometheus-stack) */}}
+    {{- with .Values.serviceMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: electricity-price
   endpoints:
-    - port: {{ .Values.serviceMonitor.portName }}
+    - port: {{ .Values.serviceMonitor.portName }}   # Måste matcha Service-portens namn (t.ex. "http")
       path: {{ .Values.serviceMonitor.path }}
       interval: {{ .Values.serviceMonitor.interval }}
+      {{- with .Values.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ . }}                        # Används om satt i values
+      {{- end }}
 {{- end }}
