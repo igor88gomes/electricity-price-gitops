@@ -21,5 +21,7 @@ resources:
   #   memory: 256Mi
 
 # TODO: Slå på när du Prometheus Operator redo i klustret
-# serviceMonitor:
-#   enabled: true
+serviceMonitor:
+  enabled: false
+  additionalLabels:
+

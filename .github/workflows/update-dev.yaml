@@ -1,0 +1,101 @@
+name: GitOps - Update DEV (by tag + digest)
+
+on:
+  repository_dispatch:
+    types: [update-dev]   # Förväntar client_payload: { "tag": "...", "digest": "sha256:..." }
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "DEV image tag (e.g., dev-<sha7>)"
+        required: true
+        type: string
+      digest:
+        description: "Manifest digest (sha256:<...>)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  DEV_FILE: environments/dev/values.yaml
+  BR_PREFIX: chore/dev-image-
+
+jobs:
+  update-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve inputs
+        id: meta
+        shell: bash
+        run: |
+          # Stöd både repository_dispatch och manuell körning (workflow_dispatch).
+          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+            TAG="${{ github.event.client_payload.tag }}"
+            DIGEST="${{ github.event.client_payload.digest }}"
+          else
+            TAG="${{ inputs.tag }}"
+            DIGEST="${{ inputs.digest }}"
+          fi
+
+          if [[ -z "$TAG" ]]; then
+            echo "ERROR: tag is required"; exit 1
+          fi
+          if [[ -z "$DIGEST" || "$DIGEST" != sha256:* ]]; then
+            echo "ERROR: digest must be like sha256:<hash>"; exit 1
+          fi
+
+          echo "TAG=$TAG" >> $GITHUB_OUTPUT
+          echo "DIGEST=$DIGEST" >> $GITHUB_OUTPUT
+          echo "SHORT=${DIGEST:7:12}" >> $GITHUB_OUTPUT
+
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
+
+      - name: Create branch and update DEV values
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Skapa en beskrivande branch för DEV-uppdateringen.
+          BR="${{ env.BR_PREFIX }}${{ steps.meta.outputs.TAG }}"
+          git switch -c "$BR"
+
+          # Sätt image.tag till inkommande TAG (ex. dev-<sha7>).
+          sed -i -E \
+            -e 's|^([[:space:]]*tag:).*|\1 '"${{ steps.meta.outputs.TAG }}"'|' \
+            "${{ env.DEV_FILE }}"
+
+          # Pinna också exakt artefakt med image.digest = sha256:...
+          if grep -qE '^\s*digest:' "${{ env.DEV_FILE }}"; then
+            sed -i -E \
+              -e 's|^([[:space:]]*digest:).*|\1 "'"${{ steps.meta.outputs.DIGEST }}"'"|' \
+              "${{ env.DEV_FILE }}"
+          else
+            # Om digest-rad saknas, injicera under image:-blocket.
+            awk -v dg="${{ steps.meta.outputs.DIGEST }}" '
+              BEGIN{done=0}
+              /^image:/{print; print "  digest: \"" dg "\""; done=1; next}
+              {print}
+              END{if(!done) print "image:\n  digest: \"" dg "\""}
+            ' "${{ env.DEV_FILE }}" > tmp && mv tmp "${{ env.DEV_FILE }}"
+          fi
+
+          git add "${{ env.DEV_FILE }}"
+          git -c user.name="github-actions[bot]" \
+              -c user.email="github-actions[bot]@users.noreply.github.com" \
+              commit -m "chore(gitops): DEV -> tag ${{ steps.meta.outputs.TAG }} (pin ${{
+                steps.meta.outputs.DIGEST }})"
+          git push -u origin "$BR"
+
+      - name: Open pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Skapa ett PR mot main med tydlig beskrivning.
+          gh pr create \
+            --base main \
+            --head "${{ env.BR_PREFIX }}${{ steps.meta.outputs.TAG }}" \
+            --title "chore(gitops): DEV → ${{ steps.meta.outputs.TAG }}" \
+            --body  "Update DEV image:\n\n- \`${{ env.DEV_FILE }}\`\n  - tag: \`${{ steps.meta.outputs.TAG }}\`\n  - digest: \`${{ steps.meta.outputs.DIGEST }}\`"

@@ -8,5 +8,6 @@ resources:
   limits:   { cpu: 300m, memory: 384Mi }
 
 # TODO: Slå på när du Prometheus Operator redo i klustret
-# serviceMonitor:
-#   enabled: true
+serviceMonitor:
+  enabled: true
+ 

@@ -1,0 +1,89 @@
+name: GitOps - Release to PROD (by version + digest)
+
+on:
+  repository_dispatch:
+    types: [release-prod]   # Expects payload.client_payload.version and .digest
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "SemVer tag (e.g., v1.2.3)"
+        required: true
+        type: string
+      digest:
+        description: "sha256:<...> of the released image"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  PROD_FILE: environments/prod/values.yaml
+  ARGO_PROD_APP: argo/app-prod.yaml
+  BR_PREFIX: release/prod-
+
+jobs:
+  release-prod:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve inputs
+        id: meta
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+            V="${{ github.event.client_payload.version }}"
+            D="${{ github.event.client_payload.digest }}"
+          else
+            V="${{ inputs.version }}"
+            D="${{ inputs.digest }}"
+          fi
+
+          if [[ -z "$V" || "$V" != v*.*.* ]]; then
+            echo "ERROR: version must be SemVer like v1.2.3"; exit 1
+          fi
+          if [[ -z "$D" || "$D" != sha256:* ]]; then
+            echo "ERROR: digest must be like sha256:<hash>"; exit 1
+          fi
+
+          echo "VERSION=$V" >> $GITHUB_OUTPUT
+          echo "DIGEST=$D"  >> $GITHUB_OUTPUT
+          echo "SHORT=${D:7:12}" >> $GITHUB_OUTPUT
+
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
+
+      - name: Create branch and update PROD values + Argo app
+        shell: bash
+        run: |
+          set -euo pipefail
+          BR="${{ env.BR_PREFIX }}${{ steps.meta.outputs.VERSION }}"
+          git switch -c "$BR"
+
+          # Sätt PROD till exakt version + digest
+          sed -i -E \
+            -e 's|^([[:space:]]*tag:).*|\1 '"${{ steps.meta.outputs.VERSION }}"'|' \
+            -e 's|^([[:space:]]*digest:).*|\1 '"${{ steps.meta.outputs.DIGEST }}"'|' \
+            "${{ env.PROD_FILE }}"
+
+          # ArgoCD PROD app ska peka på taggen (reproducerbar release)
+          sed -i -E \
+            -e 's|^([[:space:]]*targetRevision:).*|\1 '"${{ steps.meta.outputs.VERSION }}"'|' \
+            "${{ env.ARGO_PROD_APP }}"
+
+          git add "${{ env.PROD_FILE }}" "${{ env.ARGO_PROD_APP }}"
+          git -c user.name="github-actions[bot]" \
+              -c user.email="github-actions[bot]@users.noreply.github.com" \
+              commit -m "release(gitops): PROD -> ${{
+                steps.meta.outputs.VERSION }} (pin digest ${{ steps.meta.outputs.DIGEST }})"
+          git push -u origin "$BR"
+
+      - name: Open pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base main \
+            --head "${{ env.BR_PREFIX }}${{ steps.meta.outputs.VERSION }}" \
+            --title "release(gitops): PROD → ${{ steps.meta.outputs.VERSION }}" \
+            --body  "Release to PROD.\n\n- \`${{ env.PROD_FILE }}\`: tag=${{ steps.meta.outputs.VERSION }}, digest=${{ steps.meta.outputs.DIGEST }}\n- \`${{ env.ARGO_PROD_APP }}\`: targetRevision=${{ steps.meta.outputs.VERSION }}"
