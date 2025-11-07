@@ -1,0 +1,73 @@
+name: GitOps - Promote to STAGING (by digest)
+
+on:
+  repository_dispatch:
+    types: [promote-staging]   # Expects payload.client_payload.digest
+  workflow_dispatch:
+    inputs:
+      digest:
+        description: "sha256:<...> to promote to STAGING"
+        required: true
+        type: string
+
+permissions:
+  contents: write            # Behövs för att skapa branch/commit/PR
+  pull-requests: write
+
+env:
+  STAGING_FILE: environments/staging/values.yaml
+  BR_PREFIX: ops/staging-digest-
+
+jobs:
+  promote-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve digest input
+        id: meta
+        shell: bash
+        run: |
+          # Hämta digest från repository_dispatch eller workflow_dispatch
+          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+            D="${{ github.event.client_payload.digest }}"
+          else
+            D="${{ inputs.digest }}"
+          fi
+          if [[ -z "$D" || "$D" != sha256:* ]]; then
+            echo "ERROR: digest must be like sha256:<hash>"; exit 1
+          fi
+          echo "DIGEST=$D" >> $GITHUB_OUTPUT
+          echo "SHORT=${D:7:12}" >> $GITHUB_OUTPUT
+
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
+
+      - name: Create branch and update STAGING values
+        shell: bash
+        run: |
+          set -euo pipefail
+          BR="${{ env.BR_PREFIX }}${{ steps.meta.outputs.SHORT }}"
+          git switch -c "$BR"
+
+          # Pinna digest och töm tag i STAGING
+          # set image.tag: ""  (exact line), set image.digest: "<sha256:...>"
+          sed -i -E \
+            -e 's|^([[:space:]]*tag:).*|\1 ""|' \
+            -e 's|^([[:space:]]*digest:).*|\1 "'"${{ steps.meta.outputs.DIGEST }}"'"|' \
+            "${{ env.STAGING_FILE }}"
+
+          git add "${{ env.STAGING_FILE }}"
+          git -c user.name="github-actions[bot]" \
+              -c user.email="github-actions[bot]@users.noreply.github.com" \
+              commit -m "chore(gitops): STAGING -> pin digest ${{ steps.meta.outputs.DIGEST }}"
+          git push -u origin "$BR"
+
+      - name: Open pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Skapa PR mot main
+          gh pr create \
+            --base main \
+            --head "${{ env.BR_PREFIX }}${{ steps.meta.outputs.SHORT }}" \
+            --title "chore(gitops): STAGING → ${{ steps.meta.outputs.DIGEST }}" \
+            --body  "Promote DEV image digest to STAGING.\n\n- Pinned \`${{ env.STAGING_FILE }}\` to \`${{ steps.meta.outputs.DIGEST }}\`.\n- \`image.tag\` cleared (digest takes precedence)."

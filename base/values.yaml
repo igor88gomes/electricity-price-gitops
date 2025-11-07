@@ -42,6 +42,5 @@ serviceMonitor:
   interval: 30s
   portName: http                # Måste matcha service.name ovan
   scrapeTimeout: 10s
-  # additionalLabels kan krävas beroende på Prometheus' selector (t.ex. release: kube-prometheus-stack)
-  # additionalLabels:
-  #   release: kube-prometheus-stack
+  additionalLabels:
+    release: monitoring
