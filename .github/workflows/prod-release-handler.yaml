@@ -82,9 +82,14 @@ jobs:
                 steps.meta.outputs.VERSION }} (pin digest ${{ steps.meta.outputs.DIGEST }})"
           git push -u origin "$BR"
 
+      - name: Authenticate gh
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+        run: echo "$GH_TOKEN" | gh auth login --with-token
+
       - name: Open pull request
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
         run: |
           gh pr create \
             --base main \
