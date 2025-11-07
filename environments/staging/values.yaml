@@ -2,7 +2,7 @@
 image:
   repository: ghcr.io/igor88gomes/electricity-price
   tag: ""
-  digest: "sha256:e5713d054c515f074c1b8f93eed4c3a5edc0342550cba22bba9c06e248452b2a"  # sätts av GitOps-promotion 
+  digest: "sha256:ec8e18ae929f388ddd95e9a20b0371fb3533e0b00603eb56ab212a55d2415386"
   requests: { cpu: 75m, memory: 192Mi }
   limits:   { cpu: 300m, memory: 384Mi }
 
