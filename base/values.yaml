@@ -17,15 +17,15 @@ service:
 probes:
   readiness:
     path: /readyz
-    initialDelaySeconds: 5
+    initialDelaySeconds: 20   # robustare start (tid för Gunicorn att värma upp)
     periodSeconds: 10
-    timeoutSeconds: 3
+    timeoutSeconds: 5
     failureThreshold: 5
   liveness:
     path: /healthz
-    initialDelaySeconds: 5
+    initialDelaySeconds: 30   # ge appen mer tid innan liveness slår in
     periodSeconds: 10
-    timeoutSeconds: 3
+    timeoutSeconds: 5
     failureThreshold: 5
 
 resources:
@@ -33,8 +33,8 @@ resources:
     cpu: 50m
     memory: 128Mi
   limits:
-    cpu: 200m
-    memory: 256Mi
+    cpu: 300m        # lite mer headroom än 200m för att undvika OOM/CPU-throttle vid uppstart
+    memory: 512Mi     # ökade till 512Mi baserat på observation (ExitCode 137)
 
 serviceMonitor:                
   enabled: false                # TODO: Sätt true när Prometheus Operator/CRD är installerad
