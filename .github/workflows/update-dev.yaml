@@ -54,46 +54,53 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Create branch and update DEV values
+        id: apply
         shell: bash
         run: |
           set -euo pipefail
 
-          # Skapa en beskrivande branch för DEV-uppdateringen.
           BR="${{ env.BR_PREFIX }}${{ steps.meta.outputs.TAG }}"
           git switch -c "$BR"
 
-          # Sätt image.tag till inkommande TAG (ex. dev-<sha7>).
+          # Update tag
           sed -i -E \
             -e 's|^([[:space:]]*tag:).*|\1 '"${{ steps.meta.outputs.TAG }}"'|' \
             "${{ env.DEV_FILE }}"
 
-          # Pinna också exakt artefakt med image.digest = sha256:...
+          # Ensure/Update digest
           if grep -qE '^\s*digest:' "${{ env.DEV_FILE }}"; then
             sed -i -E \
               -e 's|^([[:space:]]*digest:).*|\1 "'"${{ steps.meta.outputs.DIGEST }}"'"|' \
               "${{ env.DEV_FILE }}"
           else
-            # Om digest-rad saknas, injicera under image:-blocket.
             awk -v dg="${{ steps.meta.outputs.DIGEST }}" '
               BEGIN{done=0}
               /^image:/{print; print "  digest: \"" dg "\""; done=1; next}
               {print}
-              END{if(!done) print "image:\n  digest: \"" dg "\""}
+              END{if(!done) print "image:\n  digest: \"" dg "\"" }
             ' "${{ env.DEV_FILE }}" > tmp && mv tmp "${{ env.DEV_FILE }}"
           fi
 
           git add "${{ env.DEV_FILE }}"
+
+          # If nothing changed, skip commit/PR gracefully.
+          if git diff --staged --quiet; then
+            echo "NO_CHANGES=true" >> $GITHUB_OUTPUT
+            echo "No changes detected; skipping commit and PR."
+            exit 0
+          fi
+
           git -c user.name="github-actions[bot]" \
               -c user.email="github-actions[bot]@users.noreply.github.com" \
-              commit -m "chore(gitops): DEV -> tag ${{ steps.meta.outputs.TAG }} (pin ${{
-                steps.meta.outputs.DIGEST }})"
+              commit -m "chore(gitops): DEV -> tag ${{ steps.meta.outputs.TAG }} (pin ${{ steps.meta.outputs.DIGEST }})"
           git push -u origin "$BR"
+          echo "NO_CHANGES=false" >> $GITHUB_OUTPUT
 
       - name: Open pull request
+        if: steps.apply.outputs.NO_CHANGES == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Skapa ett PR mot main med tydlig beskrivning.
           gh pr create \
             --base main \
             --head "${{ env.BR_PREFIX }}${{ steps.meta.outputs.TAG }}" \
