@@ -1,9 +1,8 @@
 # Staging: promotion från DEV, samma image (staging-<sha>)
 image:
   repository: ghcr.io/igor88gomes/electricity-price
-  tag: staging-LOCAL
-  digest: ""  # sätts av GitOps-promotion (sha256:<...>)
-resources:
+  tag: ""
+  digest: "sha256:e5713d054c515f074c1b8f93eed4c3a5edc0342550cba22bba9c06e248452b2a"  # sätts av GitOps-promotion 
   requests: { cpu: 75m, memory: 192Mi }
   limits:   { cpu: 300m, memory: 384Mi }
 
