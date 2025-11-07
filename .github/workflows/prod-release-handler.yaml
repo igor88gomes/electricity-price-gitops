@@ -31,12 +31,15 @@ jobs:
         id: meta
         shell: bash
         run: |
+          # Get version, digest (and optionally sha) from dispatch or manual input
           if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
             V="${{ github.event.client_payload.version }}"
             D="${{ github.event.client_payload.digest }}"
+            S="${{ github.event.client_payload.sha }}"
           else
             V="${{ inputs.version }}"
             D="${{ inputs.digest }}"
+            S="manual"
           fi
 
           if [[ -z "$V" || "$V" != v*.*.* ]]; then
@@ -49,6 +52,7 @@ jobs:
           echo "VERSION=$V" >> $GITHUB_OUTPUT
           echo "DIGEST=$D"  >> $GITHUB_OUTPUT
           echo "SHORT=${D:7:12}" >> $GITHUB_OUTPUT
+          echo "SHA=$S" >> $GITHUB_OUTPUT
 
       - name: Checkout GitOps repo
         uses: actions/checkout@v4
