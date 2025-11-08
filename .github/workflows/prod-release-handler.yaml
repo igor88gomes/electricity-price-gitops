@@ -1,13 +1,10 @@
-name: GitOps - Promote to STAGING (by digest)
+name: GitOps - Promote to STAGING (by digest) 
 
 on:
   repository_dispatch:
     types: [promote-staging]   # Expects payload.client_payload.digest
   workflow_dispatch:
     inputs:
-      description: "SemVer tag (e.g., v1.2.3)"
-      required: true
-      type: string
       digest:
         description: "sha256:<...> to promote to STAGING"
         required: true
