@@ -73,12 +73,8 @@ jobs:
             -e 's|^([[:space:]]*digest:).*|\1 "'"${{ steps.meta.outputs.DIGEST }}"'"|' \
             "${{ env.PROD_VALUES_FILE }}"
 
-          # Uppdatera targetRevision i ArgoCD app för PROD
-          sed -i -E \
-            -e 's|^([[:space:]]*targetRevision:).*|\1 '"${{ steps.meta.outputs.VERSION }}"'|' \
-            "${{ env.PROD_APP_FILE }}"
-
-          git add "${{ env.PROD_VALUES_FILE }}" "${{ env.PROD_APP_FILE }}"
+          # Endast values uppdateras och ArgoCD-appen spårar alltid 'main'-branchen
+          git add "${{ env.PROD_VALUES_FILE }}"
 
           git -c user.name="github-actions[bot]" \
               -c user.email="github-actions[bot]@users.noreply.github.com" \
@@ -95,4 +91,4 @@ jobs:
             --base main \
             --head "${{ env.BR_PREFIX }}${{ steps.meta.outputs.VERSION }}" \
             --title "release(gitops): PROD -> ${{ steps.meta.outputs.VERSION }}" \
-            --body  "Promote PROD to image digest \`${{ steps.meta.outputs.DIGEST }}\`.\n\n- Updated \`${{ env.PROD_VALUES_FILE }}\` with \`tag: ${{ steps.meta.outputs.VERSION }}\` and \`digest: ${{ steps.meta.outputs.DIGEST }}\`.\n- Updated \`${{ env.PROD_APP_FILE }}\` to \`targetRevision: ${{ steps.meta.outputs.VERSION }}\`."
+            --body  "Promote PROD to image digest \`${{ steps.meta.outputs.DIGEST }}\`.\n\n- Updated \`${{ env.PROD_VALUES_FILE }}\` with \`tag: ${{ steps.meta.outputs.VERSION }}\` and \`digest: ${{ steps.meta.outputs.DIGEST }}\`."

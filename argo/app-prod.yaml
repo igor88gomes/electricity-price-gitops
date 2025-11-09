@@ -8,8 +8,8 @@ spec:
   project: default
   source:
     repoURL: https://github.com/igor88gomes/electricity-price-gitops.git
-    # Peka på en SemVer-tag (t.ex. v1.2.3) för reproducerbara releaser – inte 'main'.
-    targetRevision: v0.1.0
+    # Spårar alltid 'main'-branchen i GitOps – version styrs via values.yaml (image.tag).
+    targetRevision: main
     path: base
     helm:
       valueFiles:
