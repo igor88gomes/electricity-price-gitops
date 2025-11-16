@@ -1,8 +1,8 @@
 # Prod: SemVer-taggar (vX.Y.Z), stabilt
 image:
   repository: ghcr.io/igor88gomes/electricity-price
-  tag: v0.1.0
-  digest: "sha256:0a283838f2885470325e16c4163fd19a52f628dd3789d2bd5eb671a8444b3bbe"
+  tag: v0.1.1
+  digest: "sha256:35e59f12b609092fac2bc4dddd5ccf8233a16121eed242bd96e5e16aeccaf6fd"
 resources:
   requests: { cpu: 100m, memory: 256Mi }
   limits:   { cpu: 400m, memory: 512Mi }
