@@ -96,12 +96,6 @@ jobs:
           git push -u origin "$BR"
           echo "NO_CHANGES=false" >> $GITHUB_OUTPUT
 
-      - name: Authenticate gh
-        if: steps.apply.outputs.NO_CHANGES == 'false'
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
-        run: echo "$GH_TOKEN" | gh auth login --with-token
-
       - name: Open pull request
         if: steps.apply.outputs.NO_CHANGES == 'false'
         env:
