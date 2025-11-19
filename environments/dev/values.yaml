@@ -1,8 +1,8 @@
 # Dev: täta deploys, tag sätts av CI (dev-<sha>)
 image:
   repository: ghcr.io/igor88gomes/electricity-price
-  tag: dev-6ff882e
-  digest: "sha256:5831b094cfad06237e2a9f3f089547bd452989fa25292c7da1fd8a2e8e755e5b"
+  tag: dev-087b87f
+  digest: "sha256:cd0ed53902a7f0faa5d9fe067ff3036afa9892d9b1ad8ec669963b8dac00ab58"
 
 # Behåll basens portsättning (service.name/http, port/targetPort=8000)
 # Om man vill överskrida specifikt för DEV, avkommentera nedan:
