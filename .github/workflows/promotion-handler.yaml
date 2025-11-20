@@ -26,7 +26,7 @@ jobs:
         id: meta
         shell: bash
         run: |
-          # Get digest (and optionally tag, sha) from repository_dispatch or workflow_dispatch
+          # Hämta digest (och ev. tag/sha) från repository_dispatch eller workflow_dispatch
           if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
             D="${{ github.event.client_payload.digest }}"
             T="${{ github.event.client_payload.tag }}"
@@ -36,9 +36,23 @@ jobs:
             T="manual"
             S="manual"
           fi
-          if [[ -z "$D" || "$D" != sha256:* ]]; then
-            echo "ERROR: digest must be like sha256:<hash>"; exit 1
+
+          # Trimma bort ledande/efterföljande whitespace (inkl. radbrytningar)
+          D="$(echo "$D" | xargs)"
+          T="$(echo "$T" | xargs)"
+          S="$(echo "$S" | xargs)"
+
+          echo "Got DIGEST='$D'"
+          echo "Got TAG='$T'"
+          echo "Got SHA='$S'"
+
+          # Strikt validering av digest-formatet: sha256:<64 hextecken>
+          if ! [[ "$D" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "ERROR: digest must be like sha256:<hash> (got '$D')" >&2
+            exit 1
           fi
+
+          # Exportera värden till följande steg
           echo "DIGEST=$D" >> $GITHUB_OUTPUT
           echo "SHORT=${D:7:12}" >> $GITHUB_OUTPUT
           echo "TAG=$T" >> $GITHUB_OUTPUT

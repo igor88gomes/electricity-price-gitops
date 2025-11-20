@@ -39,13 +39,26 @@ jobs:
             DIGEST="${{ inputs.digest }}"
           fi
 
+          # Trimma bort ledande/efterföljande whitespace (inkl. radbrytningar)
+          TAG="$(echo "$TAG" | xargs)"
+          DIGEST="$(echo "$DIGEST" | xargs)"
+
+          echo "Got TAG='$TAG'"
+          echo "Got DIGEST='$DIGEST'"
+
+          # Enkel validering av tag (måste finnas, t.ex. dev-<sha7>)
           if [[ -z "$TAG" ]]; then
-            echo "ERROR: tag is required"; exit 1
-          fi
-          if [[ -z "$DIGEST" || "$DIGEST" != sha256:* ]]; then
-            echo "ERROR: digest must be like sha256:<hash>"; exit 1
+            echo "ERROR: tag is required" >&2
+            exit 1
           fi
 
+          # Strikt validering av digest-formatet: sha256:<64 hextecken>
+          if ! [[ "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "ERROR: digest must be like sha256:<hash> (got '$DIGEST')" >&2
+            exit 1
+          fi
+
+          # Exportera värden till följande steg
           echo "TAG=$TAG" >> $GITHUB_OUTPUT
           echo "DIGEST=$DIGEST" >> $GITHUB_OUTPUT
           echo "SHORT=${DIGEST:7:12}" >> $GITHUB_OUTPUT
