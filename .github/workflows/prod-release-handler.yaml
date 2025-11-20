@@ -40,18 +40,26 @@ jobs:
             D="${{ inputs.digest }}"
           fi
 
+          # Trimma bort ledande/efterföljande whitespace (inkl. radbrytningar)
+          V="$(echo "$V" | xargs)"
+          D="$(echo "$D" | xargs)"
+
+          echo "Got VERSION='$V'"
+          echo "Got DIGEST='$D'"
+
           # Enkel validering av SemVer-taggen (t.ex. v0.1.0)
           if [[ -z "$V" || "$V" != v*.*.* ]]; then
             echo "ERROR: version must look like vX.Y.Z (got '$V')" >&2
             exit 1
           fi
 
-          # Enkel validering av digest-formatet
-          if [[ -z "$D" || "$D" != sha256:* ]]; then
-            echo "ERROR: digest must be like sha256:<hash> (got '$D')" >&2
+          # Strikt validering av digest-formatet: sha256:<64 hextecken>
+          if ! [[ "$D" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "ERROR: digest must be like sha256:<64-hex> (got '$D')" >&2
             exit 1
           fi
 
+          # Exportera värden till följande steg
           echo "VERSION=$V" >> "$GITHUB_OUTPUT"
           echo "DIGEST=$D"  >> "$GITHUB_OUTPUT"
 
