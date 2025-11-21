@@ -22,6 +22,6 @@ resources:
 
 # TODO: Slå på när du Prometheus Operator redo i klustret
 serviceMonitor:
-  enabled: false
+  enabled: true
   additionalLabels:
 
