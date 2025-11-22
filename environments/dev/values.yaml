@@ -15,7 +15,7 @@ resources:
   requests:
     cpu: 50m
     memory: 128Mi
-  # Om man vill ha gna limits i DEV
+  # Om man vill ha egna limits i DEV
   # limits:
   #   cpu: 200m
   #   memory: 256Mi
@@ -25,3 +25,13 @@ serviceMonitor:
   enabled: true
   additionalLabels:
 
+ingress:
+  enabled: true
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: dev.electricity-price.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
