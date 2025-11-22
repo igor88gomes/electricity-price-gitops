@@ -36,7 +36,7 @@ resources:
     cpu: 300m        # lite mer headroom än 200m för att undvika OOM/CPU-throttle vid uppstart
     memory: 512Mi     # ökade till 512Mi baserat på observation (ExitCode 137)
 
-serviceMonitor:                
+serviceMonitor:
   enabled: false                # TODO: Sätt true när Prometheus Operator/CRD är installerad
   path: /metrics
   interval: 30s
@@ -44,3 +44,15 @@ serviceMonitor:
   scrapeTimeout: 10s
   additionalLabels:
     release: monitoring
+
+# Ingress – generella värden; detaljer (host) sätts per miljö via t.ex. app-dev/app-staging/app-prod
+ingress:
+  enabled: false                # Sätts till true per miljö när Ingress ska användas
+  className: ""                 # Exempel: "nginx" om du använder nginx-ingress-controller
+  annotations: {}
+  hosts:
+    - host: ""                  # Sätts per miljö, t.ex. dev.electricity-price.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []                       # Kan fyllas på i framtiden om du har certifikat
