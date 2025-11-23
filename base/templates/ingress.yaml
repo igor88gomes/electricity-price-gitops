@@ -30,8 +30,12 @@ spec:
                   name: {{ $svcPortName }}
           {{- end }}
     {{- end }}
-  {{- if .Values.ingress.tls }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
-    {{- toYaml .Values.ingress.tls | nindent 4 }}
+    - hosts:
+        {{- range .Values.ingress.hosts }}
+        - {{ .host | quote }}
+        {{- end }}
+      secretName: {{ .Values.ingress.tls.secretName | quote }}
   {{- end }}
 {{- end }}

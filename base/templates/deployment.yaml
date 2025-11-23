@@ -14,8 +14,19 @@ spec:
       labels:
         app.kubernetes.io/name: electricity-price
     spec:
+      # PodSecurityContext för att sätta gemensamma säkerhetsinställningar för alla containers i poden.
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 2000
       containers:
+        # Kör containern som non-root utan extra capabilities.
         - name: app
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
 {{- if .Values.image.digest }}
           image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
 {{- else }}

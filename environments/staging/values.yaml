@@ -19,4 +19,6 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
-  tls: []
+  tls: 
+    enabled: true
+    secretName: electricity-price-staging-tls
