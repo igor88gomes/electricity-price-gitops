@@ -14,12 +14,13 @@ spec:
       labels:
         app.kubernetes.io/name: electricity-price
     spec:
-      # PodSecurityContext för att sätta gemensamma säkerhetsinställningar för alla containers i poden.
+      # Svenska: PodSecurityContext för att sätta gemensamma säkerhetsinställningar för alla containers i poden.
       securityContext:
         runAsNonRoot: true
+        runAsUser: 1000      # Måste matcha UID för appuser i Docker-imagen
         fsGroup: 2000
       containers:
-        # Kör containern som non-root utan extra capabilities.
+        # Svenska: Kör containern som non-root utan extra capabilities.
         - name: app
           securityContext:
             runAsNonRoot: true
@@ -36,7 +37,7 @@ spec:
           ports:
             - name: http
               # ContainerPort ska matcha den faktiska porten som processen lyssnar på.
-              # Läser från service.targetPort så att probes/Service pekar på samma port.
+              # Läser från service.targetPort så att probes/ServiceMonitor pekar på samma port.
               containerPort: {{ .Values.service.targetPort }}
           readinessProbe:
             httpGet:
