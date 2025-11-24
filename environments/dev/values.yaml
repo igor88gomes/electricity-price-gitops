@@ -35,5 +35,5 @@ ingress:
         - path: /
           pathType: Prefix
   tls:
-    enabled: false          
-    secretName: "" 
+    enabled: true          
+    secretName: electricity-price-dev-tls 
