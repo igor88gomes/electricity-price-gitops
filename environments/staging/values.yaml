@@ -3,6 +3,8 @@ image:
   repository: ghcr.io/igor88gomes/electricity-price
   tag: ""
   digest: "sha256:f96dec7a8aa1d7f5e5b5cf71e03a1ee9b87e04c559af3e3c36fe373e14275d93"
+
+resources:
   requests: { cpu: 75m, memory: 192Mi }
   limits:   { cpu: 300m, memory: 384Mi }
 
@@ -13,7 +15,9 @@ serviceMonitor:
 ingress:
   enabled: true
   className: nginx
-  annotations: {}
+  annotations: 
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
   hosts:
     - host: staging.electricity-price.local
       paths:
@@ -22,3 +26,7 @@ ingress:
   tls: 
     enabled: true
     secretName: electricity-price-staging-tls
+
+networkPolicy:
+  enabled: true
+

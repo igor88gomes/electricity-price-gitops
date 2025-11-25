@@ -57,4 +57,8 @@ ingress:
           pathType: Prefix
   tls:
     enabled: false          
-    secretName: ""                       
+    secretName: ""       
+    
+networkPolicy:
+  enabled: false
+
