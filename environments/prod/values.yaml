@@ -13,7 +13,9 @@ serviceMonitor:
 ingress:
   enabled: true
   className: nginx
-  annotations: {}
+  annotations: 
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
   hosts:
     - host: prod.electricity-price.local
       paths:
@@ -22,3 +24,6 @@ ingress:
   tls: 
     enabled: true
     secretName: electricity-price-prod-tls
+
+networkPolicy:
+  enabled: true

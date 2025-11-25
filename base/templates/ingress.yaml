@@ -5,9 +5,9 @@ metadata:
   name: {{ include "electricity.fullname" . }}
   labels:
     app.kubernetes.io/name: electricity-price
-  {{- if .Values.ingress.annotations }}
+  {{- with .Values.ingress.annotations }}
   annotations:
-    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   {{- if .Values.ingress.className }}
