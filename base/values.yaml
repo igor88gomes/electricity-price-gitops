@@ -1,29 +1,28 @@
-# Basvärden som kan delas mellan miljöer
+---
 image:
-  repository: ghcr.io/igor88gomes/electricity-price  # ändras via env-values
-  tag: dev-LOCAL                                     # pipelines skriver om detta
-  digest: ""                                         # lämna tomt om tag används; sätt sha256:<...> vid promotion
+  repository: ghcr.io/igor88gomes/electricity-price  
+  tag: dev-LOCAL                                     
+  digest: ""                                         
   pullPolicy: IfNotPresent
 
 replicaCount: 1
 
 service:
   type: ClusterIP
-  name: http                 # Namngiven port som används av probes/ServiceMonitor
-  port: 8000                 # Extern port på Service
-  targetPort: 8000           # Måste matcha containerPort i Deployment
+  name: http                 
+  port: 8000                 
+  targetPort: 8000   
 
-# Probes – Flask/Gunicorn har /healthz och /readyz
 probes:
   readiness:
     path: /readyz
-    initialDelaySeconds: 20   # robustare start (tid för Gunicorn att värma upp)
+    initialDelaySeconds: 20   
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 5
   liveness:
     path: /healthz
-    initialDelaySeconds: 30   # ge appen mer tid innan liveness slår in
+    initialDelaySeconds: 30   
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 5
@@ -33,25 +32,24 @@ resources:
     cpu: 50m
     memory: 128Mi
   limits:
-    cpu: 300m        # lite mer headroom än 200m för att undvika OOM/CPU-throttle vid uppstart
-    memory: 512Mi     # ökade till 512Mi baserat på observation (ExitCode 137)
+    cpu: 300m        
+    memory: 512Mi    
 
 serviceMonitor:
-  enabled: false                # TODO: Sätt true när Prometheus Operator/CRD är installerad
+  enabled: false               
   path: /metrics
   interval: 30s
-  portName: http                # Måste matcha service.name ovan
+  portName: http          
   scrapeTimeout: 10s
   additionalLabels:
     release: monitoring
 
-# Ingress – generella värden; detaljer (host) sätts per miljö via t.ex. app-dev/app-staging/app-prod
 ingress:
-  enabled: false                # Sätts till true per miljö när Ingress ska användas
-  className: ""                 # Exempel: "nginx" om du använder nginx-ingress-controller
+  enabled: false               
+  className: ""                 
   annotations: {}
   hosts:
-    - host: ""                  # Sätts per miljö, t.ex. dev.electricity-price.local
+    - host: ""                 
       paths:
         - path: /
           pathType: Prefix

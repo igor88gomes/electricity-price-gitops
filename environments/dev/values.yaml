@@ -1,4 +1,4 @@
-# Dev: täta deploys, tag sätts av CI (dev-<sha>)
+---
 image:
   repository: ghcr.io/igor88gomes/electricity-price
   tag: dev-b2a885c
