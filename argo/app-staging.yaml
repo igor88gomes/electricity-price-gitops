@@ -1,4 +1,4 @@
-# Staging: manuell promotion via PR (ingen auto-sync)
+---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -16,7 +16,6 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: electricity-staging
-  # Autosync avstängd (manuell promotion). Skapa ns automatiskt vid tomt kluster.
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
