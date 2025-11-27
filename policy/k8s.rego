@@ -3,7 +3,7 @@ package main
 #
 # 1) Ingress must have TLS configured (spec.tls)
 #
-deny[msg] {
+deny[msg] if {
   input.kind == "Ingress"
   not ingress_has_tls
   msg := sprintf(
@@ -12,7 +12,7 @@ deny[msg] {
   )
 }
 
-ingress_has_tls {
+ingress_has_tls if {
   input.spec.tls
   count(input.spec.tls) > 0
 }
@@ -20,7 +20,7 @@ ingress_has_tls {
 #
 # 2) Deployment: all containers must define requests/limits for cpu and memory
 #
-deny[msg] {
+deny[msg] if {
   input.kind == "Deployment"
   some i
   container := input.spec.template.spec.containers[i]
@@ -31,7 +31,7 @@ deny[msg] {
   )
 }
 
-container_has_resources(c) {
+container_has_resources(c) if {
   c.resources
   c.resources.requests
   c.resources.limits
@@ -48,7 +48,7 @@ container_has_resources(c) {
 #        OR
 #      - container.securityContext.runAsNonRoot = true
 #
-deny[msg] {
+deny[msg] if {
   input.kind == "Deployment"
   some i
   container := input.spec.template.spec.containers[i]
@@ -59,8 +59,13 @@ deny[msg] {
   )
 }
 
-container_non_root(container, pod_sc) {
+# pod-level runAsNonRoot
+container_non_root(container, pod_sc) if {
   pod_sc.runAsNonRoot == true
-} else {
+}
+
+# container-level runAsNonRoot
+container_non_root(container, pod_sc) if {
+  not pod_sc.runAsNonRoot
   container.securityContext.runAsNonRoot == true
 }
