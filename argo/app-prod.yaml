@@ -8,7 +8,6 @@ spec:
   project: default
   source:
     repoURL: https://github.com/igor88gomes/electricity-price-gitops.git
-    # Spårar alltid 'main'-branchen i GitOps – version styrs via values.yaml (image.tag).
     targetRevision: main
     path: base
     helm:
@@ -17,7 +16,6 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: electricity-prod
-  # Manuell promotion/sync i PROD. Skapa namespace automatiskt vid tomt kluster.
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

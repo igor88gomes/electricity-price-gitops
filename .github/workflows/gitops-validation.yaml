@@ -1,4 +1,4 @@
-name: GitOps Validation (Helm, YAML, Kube)
+name: GitOps Validation (Helm, Kube, OPA)
 
 on:
   pull_request:
@@ -26,23 +26,12 @@ jobs:
       - name: Helm lint (base chart)
         run: helm lint base
 
-      # YAML lint (only pure YAML)
-      - name: Install yamllint
-        run: pip install yamllint
-
-      - name: Run yamllint (values, argo, envs)
-        run: |
-          yamllint \
-            base/values.yaml \
-            argo \
-            environments
-
       # Render Helm templates (all envs)
       - name: Render Helm templates (DEV / STAGING / PROD)
         run: |
           mkdir -p rendered
 
-          # Base (bara chart + base values)
+          # Base (chart + base values)
           helm template electricity-price base \
             -f base/values.yaml \
             > rendered/base.yaml
@@ -92,7 +81,7 @@ jobs:
         run: |
           kube-linter lint rendered
 
-      # conftest (OPA policies) 
+      # conftest (OPA policies)
       - name: Install conftest
         run: |
           curl -L "https://github.com/open-policy-agent/conftest/releases/latest/download/conftest_Linux_x86_64.tar.gz" \

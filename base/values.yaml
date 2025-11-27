@@ -1,4 +1,4 @@
----
+# Basvärden som kan delas mellan miljöer
 image:
   repository: ghcr.io/igor88gomes/electricity-price  
   tag: dev-LOCAL                                     
@@ -49,7 +49,7 @@ ingress:
   className: ""                 
   annotations: {}
   hosts:
-    - host: ""                 
+    - host: ""                
       paths:
         - path: /
           pathType: Prefix

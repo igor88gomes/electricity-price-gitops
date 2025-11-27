@@ -1,4 +1,4 @@
----
+# Staging: promotion från DEV, samma image (staging-<sha>)
 image:
   repository: ghcr.io/igor88gomes/electricity-price
   tag: ""
