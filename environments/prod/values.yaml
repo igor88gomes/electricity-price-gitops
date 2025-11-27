@@ -6,7 +6,7 @@ image:
 resources:
   requests: { cpu: 100m, memory: 256Mi }
   limits:   { cpu: 400m, memory: 512Mi }
-# TODO: Slå på när du Prometheus Operator redo i klustret
+  
 serviceMonitor:
   enabled: true
 

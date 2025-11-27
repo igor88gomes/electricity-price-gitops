@@ -1,4 +1,4 @@
-# Dev: auto-sync vid varje commit (GitOps)
+---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:

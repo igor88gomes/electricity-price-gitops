@@ -6,10 +6,8 @@ image:
 
 resources:
   requests: { cpu: 50m, memory: 128Mi }
-  # Om man vill ha egna limits i DEV avkommentera nedan:
-  # limits:   { cpu: 200m, memory: 256Mi }
+  limits:   { cpu: 200m, memory: 256Mi }
 
-# TODO: Slå på när du Prometheus Operator redo i klustret
 serviceMonitor:
   enabled: true
   additionalLabels:

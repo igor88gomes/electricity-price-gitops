@@ -1,0 +1,125 @@
+name: GitOps Validation (Helm, Kube, OPA)
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Helm lint (Chart quality)
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.15.3
+
+      - name: Helm lint (base chart)
+        run: helm lint base
+
+      # YAML lint (values, argo, environments)
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Run yamllint (values, argo, envs)
+        run: |
+          yamllint -c .yamllint \
+            base/values.yaml \
+            argo \
+            environments
+
+      # Render Helm templates (DEV / STAGING / PROD)
+      - name: Render Helm templates (DEV / STAGING / PROD)
+        run: |
+          mkdir -p rendered
+
+          # Base (chart + base values)
+          helm template electricity-price base \
+            -f base/values.yaml \
+            > rendered/base.yaml
+
+          # DEV
+          helm template electricity-price-dev base \
+            -f base/values.yaml \
+            -f environments/dev/values.yaml \
+            > rendered/dev.yaml
+
+          # STAGING
+          helm template electricity-price-staging base \
+            -f base/values.yaml \
+            -f environments/staging/values.yaml \
+            > rendered/staging.yaml
+
+          # PROD
+          helm template electricity-price-prod base \
+            -f base/values.yaml \
+            -f environments/prod/values.yaml \
+            > rendered/prod.yaml
+
+      # kubeconform (schema validation)
+      - name: Install kubeconform
+        run: |
+          curl -sSfL "https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz" \
+            | tar xz
+          sudo mv kubeconform /usr/local/bin/kubeconform
+          kubeconform -version || true
+
+      - name: Run kubeconform on rendered manifests
+        run: |
+          kubeconform \
+            -strict \
+            -ignore-missing-schemas \
+            rendered/base.yaml \
+            rendered/dev.yaml \
+            rendered/staging.yaml \
+            rendered/prod.yaml
+
+      # kube-linter (best practices / security)
+      - name: Install kube-linter
+        run: |
+          curl -sSfL "https://github.com/stackrox/kube-linter/releases/latest/download/kube-linter-linux.tar.gz" \
+            -o kube-linter.tar.gz
+          tar -xzf kube-linter.tar.gz
+          sudo mv kube-linter /usr/local/bin/kube-linter
+          kube-linter version
+
+      - name: Run kube-linter on rendered manifests
+        run: |
+          kube-linter lint rendered
+
+      # conftest (OPA policies)
+      - name: Install conftest
+        run: |
+          # Get latest Conftest version from GitHub API (strip leading "v")
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/open-policy-agent/conftest/releases/latest \
+            | grep '"tag_name":' \
+            | sed -E 's/.*"v([^"]+)".*/\1/')
+
+          SYSTEM=$(uname -s)   
+          ARCH=$(uname -m)     
+
+          echo "Installing conftest ${LATEST_VERSION} for ${SYSTEM} ${ARCH}"
+
+          curl -sSfL "https://github.com/open-policy-agent/conftest/releases/download/v${LATEST_VERSION}/conftest_${LATEST_VERSION}_${SYSTEM}_${ARCH}.tar.gz" \
+            -o conftest.tar.gz
+
+          tar -xzf conftest.tar.gz
+          sudo mv conftest /usr/local/bin/conftest
+          conftest --version
+
+
+      - name: Run conftest policies (if any)
+        if: ${{ hashFiles('policy/*.rego') != '' }}
+        run: |
+          conftest test rendered/dev.yaml
+          conftest test rendered/staging.yaml
+          conftest test rendered/prod.yaml
