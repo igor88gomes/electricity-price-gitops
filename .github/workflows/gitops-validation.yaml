@@ -26,6 +26,17 @@ jobs:
       - name: Helm lint (base chart)
         run: helm lint base
 
+      # YAML lint (values, argo, environments)
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Run yamllint (values, argo, envs)
+        run: |
+          yamllint -c .yamllint \
+            base/values.yaml \
+            argo \
+            environments
+
       # Render Helm templates (DEV / STAGING / PROD)
       - name: Render Helm templates (DEV / STAGING / PROD)
         run: |
