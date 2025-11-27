@@ -6,9 +6,11 @@ rules:
   line-length:
     max: 140
     level: warning
-
+    
   trailing-spaces: disable
-
+  comments: disable
   comments-indentation: disable
-
   empty-lines: disable
+  braces: disable
+  colons: disable
+  commas: disable
