@@ -26,7 +26,7 @@ jobs:
       - name: Helm lint (base chart)
         run: helm lint base
 
-      # Render Helm templates (all envs)
+      # Render Helm templates (DEV / STAGING / PROD)
       - name: Render Helm templates (DEV / STAGING / PROD)
         run: |
           mkdir -p rendered
@@ -57,7 +57,7 @@ jobs:
       # kubeconform (schema validation)
       - name: Install kubeconform
         run: |
-          curl -L "https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz" \
+          curl -sSfL "https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz" \
             | tar xz
           sudo mv kubeconform /usr/local/bin/
 
@@ -70,12 +70,15 @@ jobs:
             rendered/dev.yaml \
             rendered/staging.yaml \
             rendered/prod.yaml
-
+            
       # kube-linter (best practices / security)
       - name: Install kube-linter
         run: |
-          curl -s https://raw.githubusercontent.com/stackrox/kube-linter/main/install.sh | bash
-          sudo mv kube-linter /usr/local/bin/
+          curl -sSfL "https://github.com/stackrox/kube-linter/releases/latest/download/kube-linter-linux-amd64.tar.gz" \
+            -o kube-linter.tar.gz
+          tar -xzf kube-linter.tar.gz
+          sudo mv kube-linter /usr/local/bin/kube-linter
+          kube-linter version
 
       - name: Run kube-linter on rendered manifests
         run: |
@@ -84,10 +87,11 @@ jobs:
       # conftest (OPA policies)
       - name: Install conftest
         run: |
-          curl -L "https://github.com/open-policy-agent/conftest/releases/latest/download/conftest_Linux_x86_64.tar.gz" \
+          curl -sSfL "https://github.com/open-policy-agent/conftest/releases/latest/download/conftest_Linux_x86_64.tar.gz" \
             -o conftest.tar.gz
           tar -xzf conftest.tar.gz
-          sudo mv conftest /usr/local/bin/
+          sudo mv conftest /usr/local/bin/conftest
+          conftest --version
 
       - name: Run conftest policies (if any)
         if: ${{ hashFiles('policy/*.rego') != '' }}
