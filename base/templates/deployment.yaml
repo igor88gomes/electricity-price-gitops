@@ -14,7 +14,7 @@ spec:
       labels:
         app.kubernetes.io/name: electricity-price
     spec:
-      # Svenska: PodSecurityContext för att sätta gemensamma säkerhetsinställningar för alla containers i poden.
+      # PodSecurityContext för att sätta gemensamma säkerhetsinställningar för alla containers i poden.
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000      # Måste matcha UID för appuser i Docker-imagen
@@ -25,6 +25,7 @@ spec:
           securityContext:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
