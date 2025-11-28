@@ -1,4 +1,3 @@
----
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -12,10 +11,13 @@ spec:
     path: base
     helm:
       valueFiles:
-        - ../environments/prod/values.yaml
+        - environments/prod/values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: electricity-prod
   syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
