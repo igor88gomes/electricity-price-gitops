@@ -11,7 +11,7 @@ spec:
     path: base
     helm:
       valueFiles:
-        - environments/prod/values.yaml
+        - ../environments/prod/values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: electricity-prod
