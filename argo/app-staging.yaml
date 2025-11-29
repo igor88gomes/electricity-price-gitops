@@ -11,7 +11,7 @@ spec:
     path: base
     helm:
       valueFiles:
-        - environments/staging/values.yaml
+        - ../environments/staging/values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: electricity-staging
