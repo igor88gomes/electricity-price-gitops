@@ -19,11 +19,13 @@ spec:
         runAsNonRoot: true
         runAsUser: 1000      # Måste matcha UID för appuser i Docker-imagen
         fsGroup: 2000
-      containers:
-       # Tom skrivbar volym för /tmp så att Gunicorn/Python kan skapa temp-filer
+
+      # Tom skrivbar volym för /tmp så att Gunicorn/Python kan skapa temp-filer
       volumes:
         - name: tmp
           emptyDir: {}
+
+      containers:
         # Kör containern som non-root utan extra capabilities.
         - name: app
           securityContext:
@@ -33,10 +35,10 @@ spec:
             capabilities:
               drop:
                 - ALL
-            volumeMounts:
+          volumeMounts:
             - name: tmp
               mountPath: /tmp
-              
+
 {{- if .Values.image.digest }}
           image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
 {{- else }}
