@@ -16,15 +16,15 @@ service:
 probes:
   readiness:
     path: /readyz
-    initialDelaySeconds: 20   
+    initialDelaySeconds: 40   
     periodSeconds: 10
-    timeoutSeconds: 5
+    timeoutSeconds: 8
     failureThreshold: 5
   liveness:
     path: /healthz
-    initialDelaySeconds: 30   
+    initialDelaySeconds: 60   
     periodSeconds: 10
-    timeoutSeconds: 5
+    timeoutSeconds: 8
     failureThreshold: 5
 
 resources:
