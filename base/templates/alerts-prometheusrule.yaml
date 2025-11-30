@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Values.alerts.namespace | default "monitoring" }}
   labels:
     release: {{ .Values.alerts.releaseLabel | default "monitoring" }}
-    app.kubernetes.io/name: {{ include "electricity.name" . }}
+    app.kubernetes.io/name: electricity-price
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   groups:
