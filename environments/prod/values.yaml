@@ -7,9 +7,6 @@ resources:
   requests: { cpu: 100m, memory: 256Mi }
   limits:   { cpu: 400m, memory: 512Mi }
   
-serviceMonitor:
-  enabled: true
-
 ingress:
   enabled: true
   className: nginx
@@ -26,4 +23,11 @@ ingress:
     secretName: electricity-price-prod-tls
 
 networkPolicy:
+  enabled: true
+
+alerts:
+  enabled: true
+  targetNamespace: electricity-prod
+
+serviceMonitor:
   enabled: true
