@@ -1,4 +1,4 @@
-# Dev: täta deploys, tag sätts av CI (dev-<sha>)
+# Dev: tÃ¤ta deploys, tag sÃ¤tts av CI (dev-<sha>)
 image:
   repository: ghcr.io/igor88gomes/electricity-price
   tag: dev-1a7d0c7
@@ -7,10 +7,6 @@ image:
 resources:
   requests: { cpu: 50m, memory: 128Mi }
   limits:   { cpu: 200m, memory: 256Mi }
-
-serviceMonitor:
-  enabled: true
-  additionalLabels:
 
 ingress:
   enabled: true
@@ -30,3 +26,8 @@ ingress:
 networkPolicy:
   enabled: true
 
+alerts:
+  enabled: false
+
+serviceMonitor:
+  enabled: false

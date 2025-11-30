@@ -60,3 +60,22 @@ ingress:
 networkPolicy:
   enabled: false
 
+alerts:
+  enabled: false         
+  namespace: monitoring
+  releaseLabel: monitoring
+  targetNamespace: electricity-prod
+
+  errorRateThreshold: 0.05
+  latencyP95Seconds: 0.5
+  cpuCoresThreshold: 0.2
+  memoryThresholdMi: 400
+
+  downFor: 2m
+  errorFor: 5m
+  latencyFor: 5m
+  cpuFor: 10m
+  memoryFor: 10m
+  crashFor: 5m
+
+
