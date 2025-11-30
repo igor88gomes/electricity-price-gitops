@@ -1,4 +1,4 @@
-# Staging: promotion från DEV, samma image (staging-<sha>)
+# Staging: promotion frÃ¥n DEV, samma image (staging-<sha>)
 image:
   repository: ghcr.io/igor88gomes/electricity-price
   tag: ""
@@ -7,9 +7,6 @@ image:
 resources:
   requests: { cpu: 75m, memory: 192Mi }
   limits:   { cpu: 300m, memory: 384Mi }
-
-serviceMonitor:
-  enabled: true
  
 ingress:
   enabled: true
@@ -27,5 +24,12 @@ ingress:
     secretName: electricity-price-staging-tls
 
 networkPolicy:
+  enabled: true
+
+alerts:
+  enabled: true
+  targetNamespace: electricity-staging
+
+serviceMonitor:
   enabled: true
 

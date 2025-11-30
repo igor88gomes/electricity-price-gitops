@@ -1,0 +1,141 @@
+{{- if .Values.alerts.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "electricity.fullname" . }}-alerts
+  namespace: {{ .Values.alerts.namespace | default "monitoring" }}
+  labels:
+    release: {{ .Values.alerts.releaseLabel | default "monitoring" }}
+    app.kubernetes.io/name: electricity-price
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  groups:
+    - name: electricity-price-app
+      rules:
+        # Prometheus kan inte scrapa /metrics för applikationen
+        - alert: ElectricityPriceDown
+          expr: sum(
+                  up{
+                    namespace="{{ .Values.alerts.targetNamespace }}",
+                    service="electricity-price"
+                  }
+                ) == 0
+          for: {{ .Values.alerts.downFor | default "2m" }}
+          labels:
+            severity: critical
+            app: electricity-price
+            env: prod
+          annotations:
+            summary: "electricity-price is DOWN in {{ .Values.alerts.targetNamespace }}"
+            description: "No 'up' scrape targets for electricity-price in namespace {{ .Values.alerts.targetNamespace }} for at least {{ .Values.alerts.downFor | default "2m" }}."
+
+        # Hög andel HTTP 5xx-fel (logikfel eller problem i backend)
+        - alert: ElectricityPriceHighErrorRate
+          expr: |
+            sum(
+              rate(
+                app_http_requests_total{
+                  namespace="{{ .Values.alerts.targetNamespace }}",
+                  http_status=~"5.."
+                }[5m]
+              )
+            )
+            /
+            sum(
+              rate(
+                app_http_requests_total{
+                  namespace="{{ .Values.alerts.targetNamespace }}"
+                }[5m]
+              )
+            ) > {{ .Values.alerts.errorRateThreshold | default 0.05 }}
+          for: {{ .Values.alerts.errorFor | default "5m" }}
+          labels:
+            severity: warning
+            app: electricity-price
+            env: prod
+          annotations:
+            summary: "High HTTP 5xx error rate in electricity-price ({{ .Values.alerts.targetNamespace }})"
+            description: "More than {{ mul 100 (.Values.alerts.errorRateThreshold | default 0.05) }}% of HTTP requests returned 5xx status codes over the last {{ .Values.alerts.errorFor | default "5m" }} in namespace {{ .Values.alerts.targetNamespace }}."
+
+        # Hög p95-latens: applikationen svarar men är långsam
+        - alert: ElectricityPriceHighLatencyP95
+          expr: |
+            histogram_quantile(
+              0.95,
+              sum by (le) (
+                rate(
+                  app_request_latency_seconds_bucket{
+                    namespace="{{ .Values.alerts.targetNamespace }}"
+                  }[5m]
+                )
+              )
+            ) > {{ .Values.alerts.latencyP95Seconds | default 0.5 }}
+          for: {{ .Values.alerts.latencyFor | default "5m" }}
+          labels:
+            severity: warning
+            app: electricity-price
+            env: prod
+          annotations:
+            summary: "High p95 response time for electricity-price in {{ .Values.alerts.targetNamespace }}"
+            description: "95th percentile response time is above {{ .Values.alerts.latencyP95Seconds | default 0.5 }} seconds for at least {{ .Values.alerts.latencyFor | default "5m" }} in namespace {{ .Values.alerts.targetNamespace }}."
+
+        # Hög CPU-användning per pod – risk för throttling eller kapacitetsproblem
+        - alert: ElectricityPriceHighCpuUsage
+          expr: |
+            sum(
+              rate(
+                container_cpu_usage_seconds_total{
+                  namespace="{{ .Values.alerts.targetNamespace }}",
+                  container!="",
+                  image!=""
+                }[5m]
+              )
+            ) by (pod)
+            > {{ .Values.alerts.cpuCoresThreshold | default 0.2 }}
+          for: {{ .Values.alerts.cpuFor | default "10m" }}
+          labels:
+            severity: warning
+            app: electricity-price
+            env: prod
+          annotations:
+            summary: "High CPU usage per pod in electricity-price ({{ .Values.alerts.targetNamespace }})"
+            description: "CPU usage per pod is above ~{{ .Values.alerts.cpuCoresThreshold | default 0.2 }} cores for at least {{ .Values.alerts.cpuFor | default "10m" }} in namespace {{ .Values.alerts.targetNamespace }}."
+
+        # Hög minnesanvändning per pod – risk för OOMKill
+        - alert: ElectricityPriceHighMemoryUsage
+          expr: |
+            sum(
+              container_memory_usage_bytes{
+                namespace="{{ .Values.alerts.targetNamespace }}",
+                container!="",
+                image!=""
+              }
+            ) by (pod)
+            > {{ mul (.Values.alerts.memoryThresholdMi | default 400) 1024 1024 }}
+          for: {{ .Values.alerts.memoryFor | default "10m" }}
+          labels:
+            severity: warning
+            app: electricity-price
+            env: prod
+          annotations:
+            summary: "High memory usage per pod in electricity-price ({{ .Values.alerts.targetNamespace }})"
+            description: "Memory usage per pod is above ~{{ .Values.alerts.memoryThresholdMi | default 400 }}Mi for at least {{ .Values.alerts.memoryFor | default "10m" }} in namespace {{ .Values.alerts.targetNamespace }}."
+
+        # CrashLoop / instabila pods – för många restarts på kort tid
+        - alert: ElectricityPriceCrashLooping
+          expr: |
+            increase(
+              kube_pod_container_status_restarts_total{
+                namespace="{{ .Values.alerts.targetNamespace }}",
+                container="app"
+              }[5m]
+            ) > 3
+          for: {{ .Values.alerts.crashFor | default "5m" }}
+          labels:
+            severity: critical
+            app: electricity-price
+            env: prod
+          annotations:
+            summary: "Pods in electricity-price are crash-looping in {{ .Values.alerts.targetNamespace }}"
+            description: "The 'app' container in namespace {{ .Values.alerts.targetNamespace }} restarted more than 3 times within 5 minutes, indicating a possible CrashLoopBackOff or unstable deployment."
+{{- end }}

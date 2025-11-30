@@ -1,0 +1,31 @@
+# alertmanager-config
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: electricity-price-email
+  namespace: monitoring
+spec:
+  route:
+    receiver: gmail
+    groupBy: ["alertname", "job"]
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 3h
+
+  receivers:
+    - name: gmail
+      emailConfigs:
+        - to:
+            name: alertmanager-gmail-secrets
+            key: alert_to
+          from:
+            name: alertmanager-gmail-secrets
+            key: smtp_username
+          smarthost: "smtp.gmail.com:587"
+          authUsername:
+            name: alertmanager-gmail-secrets
+            key: smtp_username
+          authPassword:
+            name: alertmanager-gmail-secrets
+            key: smtp_password
+          requireTLS: true
