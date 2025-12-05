@@ -4,4 +4,6 @@
 .DS_Store
 Thumbs.db
 # Local Alertmanager config – contains real email, keep only locally
-monitoring/alertmanager-config.yaml
+monitoring/
+
+# demo trigger
