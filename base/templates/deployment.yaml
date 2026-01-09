@@ -14,6 +14,7 @@ spec:
       labels:
         app.kubernetes.io/name: electricity-price
     spec:
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 40 }}
       # PodSecurityContext för att sätta gemensamma säkerhetsinställningar för alla containers i poden.
       securityContext:
         runAsNonRoot: true
