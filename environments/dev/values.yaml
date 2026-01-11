@@ -1,8 +1,8 @@
 # Dev: tÃ¤ta deploys, tag sÃ¤tts av CI (dev-<sha>)
 image:
   repository: ghcr.io/igor88gomes/electricity-price
-  tag: dev-37a9d62
-  digest: "sha256:06d39c0cf17ee019cfc9b939ce3ee29bf26cb27352781f3a2e376b7c635accd6"
+  tag: dev-158bc98
+  digest: "sha256:217cbb80959bad18b51f1b43dc465e573949717bb1a745570aa3cc7af5c9f7ef"
 
 resources:
   requests: { cpu: 50m, memory: 128Mi }
