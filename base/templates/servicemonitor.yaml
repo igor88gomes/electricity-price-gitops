@@ -14,10 +14,10 @@ spec:
     matchLabels:
       app.kubernetes.io/name: electricity-price
   endpoints:
-    - port: {{ .Values.serviceMonitor.portName }}   # Måste matcha Service-portens namn (t.ex. "http")
+    - port: {{ .Values.serviceMonitor.portName }}   # Måste matcha Service-portens namn
       path: {{ .Values.serviceMonitor.path }}
       interval: {{ .Values.serviceMonitor.interval }}
       {{- with .Values.serviceMonitor.scrapeTimeout }}
-      scrapeTimeout: {{ . }}                        # Används om satt i values
+      scrapeTimeout: {{ . }}                        
       {{- end }}
 {{- end }}
