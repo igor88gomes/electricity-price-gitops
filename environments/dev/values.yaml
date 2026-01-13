@@ -1,4 +1,3 @@
-# Dev: tÃ¤ta deploys, tag sÃ¤tts av CI (dev-<sha>)
 image:
   repository: ghcr.io/igor88gomes/electricity-price
   tag: dev-3c56622
