@@ -15,10 +15,9 @@ spec:
         app.kubernetes.io/name: electricity-price
     spec:
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 40 }}
-      # PodSecurityContext för att sätta gemensamma säkerhetsinställningar för alla containers i poden.
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000      # Måste matcha UID för appuser i Docker-imagen
+        runAsUser: 1000      
         fsGroup: 2000
 
       # Tom skrivbar volym för /tmp så att Gunicorn/Python kan skapa temp-filer
@@ -27,7 +26,6 @@ spec:
           emptyDir: {}
 
       containers:
-        # Kör containern som non-root utan extra capabilities.
         - name: app
           securityContext:
             runAsNonRoot: true
@@ -48,13 +46,10 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              # ContainerPort ska matcha den faktiska porten som processen lyssnar på.
-              # Läser från service.targetPort så att probes/ServiceMonitor pekar på samma port.
               containerPort: {{ .Values.service.targetPort }}
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.readiness.path }}
-              # Använd den namngivna porten "http" för stabil uppslagning.
               port: http
             initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds | default 5 }}
             periodSeconds: {{ .Values.probes.readiness.periodSeconds | default 10 }}

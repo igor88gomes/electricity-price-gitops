@@ -9,10 +9,11 @@ metadata:
     app.kubernetes.io/name: electricity-price
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
+  # Applikationslarm (kräver kube-prometheus-stack / Prometheus Operator).
+  # Aktiveras endast när alerts.enabled=true.
   groups:
     - name: electricity-price-app
       rules:
-        # Prometheus kan inte scrapa /metrics för applikationen
         - alert: ElectricityPriceDown
           expr: sum(
                   up{
@@ -29,7 +30,6 @@ spec:
             summary: "electricity-price is DOWN in {{ .Values.alerts.targetNamespace }}"
             description: "No 'up' scrape targets for electricity-price in namespace {{ .Values.alerts.targetNamespace }} for at least {{ .Values.alerts.downFor | default "2m" }}."
 
-        # Hög andel HTTP 5xx-fel (logikfel eller problem i backend)
         - alert: ElectricityPriceHighErrorRate
           expr: |
             sum(
@@ -57,7 +57,6 @@ spec:
             summary: "High HTTP 5xx error rate in electricity-price ({{ .Values.alerts.targetNamespace }})"
             description: "More than {{ mul 100 (.Values.alerts.errorRateThreshold | default 0.05) }}% of HTTP requests returned 5xx status codes over the last {{ .Values.alerts.errorFor | default "5m" }} in namespace {{ .Values.alerts.targetNamespace }}."
 
-        # Hög p95-latens: applikationen svarar men är långsam
         - alert: ElectricityPriceHighLatencyP95
           expr: |
             histogram_quantile(
@@ -79,7 +78,6 @@ spec:
             summary: "High p95 response time for electricity-price in {{ .Values.alerts.targetNamespace }}"
             description: "95th percentile response time is above {{ .Values.alerts.latencyP95Seconds | default 0.5 }} seconds for at least {{ .Values.alerts.latencyFor | default "5m" }} in namespace {{ .Values.alerts.targetNamespace }}."
 
-        # Hög CPU-användning per pod – risk för throttling eller kapacitetsproblem
         - alert: ElectricityPriceHighCpuUsage
           expr: |
             sum(
@@ -101,7 +99,6 @@ spec:
             summary: "High CPU usage per pod in electricity-price ({{ .Values.alerts.targetNamespace }})"
             description: "CPU usage per pod is above ~{{ .Values.alerts.cpuCoresThreshold | default 0.2 }} cores for at least {{ .Values.alerts.cpuFor | default "10m" }} in namespace {{ .Values.alerts.targetNamespace }}."
 
-        # Hög minnesanvändning per pod – risk för OOMKill
         - alert: ElectricityPriceHighMemoryUsage
           expr: |
             sum(
@@ -121,7 +118,6 @@ spec:
             summary: "High memory usage per pod in electricity-price ({{ .Values.alerts.targetNamespace }})"
             description: "Memory usage per pod is above ~{{ .Values.alerts.memoryThresholdMi | default 400 }}Mi for at least {{ .Values.alerts.memoryFor | default "10m" }} in namespace {{ .Values.alerts.targetNamespace }}."
 
-        # CrashLoop / instabila pods – för många restarts på kort tid
         - alert: ElectricityPriceCrashLooping
           expr: |
             increase(

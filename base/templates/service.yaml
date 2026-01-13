@@ -11,6 +11,5 @@ spec:
   ports:
     - name: {{ .Values.service.name | default "http" }}
       port: {{ .Values.service.port }}
-      # TargetPort ska matcha containerPort i Deployment (samma värde).
       targetPort: {{ .Values.service.targetPort }}
       protocol: TCP
