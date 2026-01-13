@@ -2,5 +2,5 @@ apiVersion: v2
 name: electricity-price
 description: Helm chart för Flask-appen (elpris) – baschart
 type: application
-version: 0.1.0       # chart-version
-appVersion: "0.1.0"  # applikationsversion (informativ)
+version: 0.1.0       
+appVersion: "0.1.0"
