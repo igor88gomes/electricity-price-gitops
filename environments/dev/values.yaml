@@ -30,3 +30,4 @@ serviceMonitor:
 
 alerts:
   enabled: false
+
