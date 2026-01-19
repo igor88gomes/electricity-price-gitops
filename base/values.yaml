@@ -36,15 +36,6 @@ resources:
     cpu: 300m        
     memory: 512Mi    
 
-serviceMonitor:
-  enabled: false               
-  path: /metrics
-  interval: 30s
-  portName: http          
-  scrapeTimeout: 10s
-  additionalLabels:
-    release: monitoring
-
 ingress:
   enabled: false               
   className: ""                 
@@ -61,11 +52,21 @@ ingress:
 networkPolicy:
   enabled: false
 
+serviceMonitor:
+  enabled: false               
+  path: /metrics
+  interval: 30s
+  portName: http          
+  scrapeTimeout: 10s
+  additionalLabels:
+    release: monitoring
+
 alerts:
-  enabled: false         
+  enabled: false
+  env: ""
   namespace: monitoring
   releaseLabel: monitoring
-  targetNamespace: electricity-prod
+  targetNamespace: ""
 
   errorRateThreshold: 0.05
   latencyP95Seconds: 0.5
@@ -78,5 +79,10 @@ alerts:
   cpuFor: 10m
   memoryFor: 10m
   crashFor: 5m
+
+  upstreamErrorRateThreshold: 0.1
+  upstreamFor: 10m
+
+
 
 

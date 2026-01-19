@@ -1,4 +1,6 @@
-{{- if .Values.alerts.enabled }}
+{{- if .Values.alerts.enabled -}}
+{{- $targetNs := required "alerts.targetNamespace must be set when alerts.enabled=true" .Values.alerts.targetNamespace -}}
+{{- $env := (.Values.alerts.env | default $targetNs) -}}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
@@ -17,7 +19,7 @@ spec:
         - alert: ElectricityPriceDown
           expr: sum(
                   up{
-                    namespace="{{ .Values.alerts.targetNamespace }}",
+                    namespace="{{ $targetNs }}",
                     service="electricity-price"
                   }
                 ) == 0
@@ -25,17 +27,17 @@ spec:
           labels:
             severity: critical
             app: electricity-price
-            env: prod
+            env: "{{ $env }}"
           annotations:
-            summary: "electricity-price is DOWN in {{ .Values.alerts.targetNamespace }}"
-            description: "No 'up' scrape targets for electricity-price in namespace {{ .Values.alerts.targetNamespace }} for at least {{ .Values.alerts.downFor | default "2m" }}."
+            summary: "electricity-price is DOWN in {{ $targetNs }}"
+            description: "No 'up' scrape targets for electricity-price in namespace {{ $targetNs }} for at least {{ .Values.alerts.downFor | default "2m" }}."
 
         - alert: ElectricityPriceHighErrorRate
           expr: |
             sum(
               rate(
                 app_http_requests_total{
-                  namespace="{{ .Values.alerts.targetNamespace }}",
+                  namespace="{{ $targetNs }}",
                   http_status=~"5.."
                 }[5m]
               )
@@ -44,7 +46,7 @@ spec:
             sum(
               rate(
                 app_http_requests_total{
-                  namespace="{{ .Values.alerts.targetNamespace }}"
+                  namespace="{{ $targetNs }}"
                 }[5m]
               )
             ) > {{ .Values.alerts.errorRateThreshold | default 0.05 }}
@@ -52,10 +54,10 @@ spec:
           labels:
             severity: warning
             app: electricity-price
-            env: prod
+            env: "{{ $env }}"
           annotations:
-            summary: "High HTTP 5xx error rate in electricity-price ({{ .Values.alerts.targetNamespace }})"
-            description: "More than {{ mul 100 (.Values.alerts.errorRateThreshold | default 0.05) }}% of HTTP requests returned 5xx status codes over the last {{ .Values.alerts.errorFor | default "5m" }} in namespace {{ .Values.alerts.targetNamespace }}."
+            summary: "High HTTP 5xx error rate in electricity-price ({{ $targetNs}})"
+            description: "More than {{ mul 100 (.Values.alerts.errorRateThreshold | default 0.05) }}% of HTTP requests returned 5xx status codes over the last {{ .Values.alerts.errorFor | default "5m" }} in namespace {{ $targetNs }}."
 
         - alert: ElectricityPriceHighLatencyP95
           expr: |
@@ -64,7 +66,7 @@ spec:
               sum by (le) (
                 rate(
                   app_request_latency_seconds_bucket{
-                    namespace="{{ .Values.alerts.targetNamespace }}"
+                    namespace="{{ $targetNs }}"
                   }[5m]
                 )
               )
@@ -73,17 +75,49 @@ spec:
           labels:
             severity: warning
             app: electricity-price
-            env: prod
+            env: "{{ $env }}"
           annotations:
-            summary: "High p95 response time for electricity-price in {{ .Values.alerts.targetNamespace }}"
-            description: "95th percentile response time is above {{ .Values.alerts.latencyP95Seconds | default 0.5 }} seconds for at least {{ .Values.alerts.latencyFor | default "5m" }} in namespace {{ .Values.alerts.targetNamespace }}."
+            summary: "High p95 response time for electricity-price in {{ $targetNs }}"
+            description: "95th percentile response time is above {{ .Values.alerts.latencyP95Seconds | default 0.5 }} seconds for at least {{ .Values.alerts.latencyFor | default "5m" }} in namespace {{ $targetNs }}."
+
+        - alert: ElectricityPriceUpstreamErrorRateHigh
+          expr: |
+            sum(
+              rate(
+                app_upstream_requests_total{
+                  namespace="{{ $targetNs }}",
+                  result="upstream_error"
+                }[5m]
+              )
+            )
+            /
+            clamp_min(
+              sum(
+                rate(
+                  app_upstream_requests_total{
+                    namespace="{{ $targetNs }}"
+                  }[5m]
+                )
+              ),
+              1
+            )
+            > {{ .Values.alerts.upstreamErrorRateThreshold | default 0.1 }}
+
+          for: {{ .Values.alerts.upstreamFor | default "10m" }}
+          labels:
+            severity: info
+            app: electricity-price
+            env: "{{ $env }}"
+          annotations:
+            summary: "High upstream error rate in electricity-price ({{ $targetNs }})"
+            description: "More than {{ mul 100 (.Values.alerts.upstreamErrorRateThreshold | default 0.1) }}% of upstream requests resulted in 'upstream_error' over the last {{ .Values.alerts.upstreamFor | default "10m" }} in namespace {{ $targetNs }}."
 
         - alert: ElectricityPriceHighCpuUsage
           expr: |
             sum(
               rate(
                 container_cpu_usage_seconds_total{
-                  namespace="{{ .Values.alerts.targetNamespace }}",
+                  namespace="{{ $targetNs }}",
                   container!="",
                   image!=""
                 }[5m]
@@ -94,16 +128,16 @@ spec:
           labels:
             severity: warning
             app: electricity-price
-            env: prod
+            env: "{{ $env }}"
           annotations:
-            summary: "High CPU usage per pod in electricity-price ({{ .Values.alerts.targetNamespace }})"
-            description: "CPU usage per pod is above ~{{ .Values.alerts.cpuCoresThreshold | default 0.2 }} cores for at least {{ .Values.alerts.cpuFor | default "10m" }} in namespace {{ .Values.alerts.targetNamespace }}."
+            summary: "High CPU usage per pod in electricity-price ({{ $targetNs }})"
+            description: "CPU usage per pod is above ~{{ .Values.alerts.cpuCoresThreshold | default 0.2 }} cores for at least {{ .Values.alerts.cpuFor | default "10m" }} in namespace {{ $targetNs }}."
 
         - alert: ElectricityPriceHighMemoryUsage
           expr: |
             sum(
               container_memory_usage_bytes{
-                namespace="{{ .Values.alerts.targetNamespace }}",
+                namespace="{{ $targetNs }}",
                 container!="",
                 image!=""
               }
@@ -113,16 +147,16 @@ spec:
           labels:
             severity: warning
             app: electricity-price
-            env: prod
+            env: "{{ $env }}"
           annotations:
-            summary: "High memory usage per pod in electricity-price ({{ .Values.alerts.targetNamespace }})"
-            description: "Memory usage per pod is above ~{{ .Values.alerts.memoryThresholdMi | default 400 }}Mi for at least {{ .Values.alerts.memoryFor | default "10m" }} in namespace {{ .Values.alerts.targetNamespace }}."
+            summary: "High memory usage per pod in electricity-price ({{ $targetNs }})"
+            description: "Memory usage per pod is above ~{{ .Values.alerts.memoryThresholdMi | default 400 }}Mi for at least {{ .Values.alerts.memoryFor | default "10m" }} in namespace {{ $targetNs }}."
 
         - alert: ElectricityPriceCrashLooping
           expr: |
             increase(
               kube_pod_container_status_restarts_total{
-                namespace="{{ .Values.alerts.targetNamespace }}",
+                namespace="{{ $targetNs }}",
                 container="app"
               }[5m]
             ) > 3
@@ -130,8 +164,8 @@ spec:
           labels:
             severity: critical
             app: electricity-price
-            env: prod
+            env: "{{ $env }}"
           annotations:
-            summary: "Pods in electricity-price are crash-looping in {{ .Values.alerts.targetNamespace }}"
-            description: "The 'app' container in namespace {{ .Values.alerts.targetNamespace }} restarted more than 3 times within 5 minutes, indicating a possible CrashLoopBackOff or unstable deployment."
+            summary: "Pods in electricity-price are crash-looping in {{ $targetNs }}"
+            description: "The 'app' container in namespace {{ $targetNs }} restarted more than 3 times within 5 minutes, indicating a possible CrashLoopBackOff or unstable deployment."
 {{- end }}

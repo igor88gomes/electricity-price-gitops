@@ -25,8 +25,9 @@ ingress:
 networkPolicy:
   enabled: true
 
+serviceMonitor:
+  enabled: false
+
 alerts:
   enabled: false
 
-serviceMonitor:
-  enabled: false
