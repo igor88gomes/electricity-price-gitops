@@ -20,7 +20,7 @@ spec:
           expr: sum(
                   up{
                     namespace="{{ $targetNs }}",
-                    service="electricity-price"
+                    service="{{ include "electricity.fullname" . }}"
                   }
                 ) == 0
           for: {{ .Values.alerts.downFor | default "2m" }}
