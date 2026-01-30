@@ -392,7 +392,6 @@ electricity-price-gitops/
 ├── argo/                   # Argo CD Application-manifests för DEV, STAGING och PROD
 ├── base/                   # Helm chart som definierar applikationens Kubernetes-resurser
 ├── environments/           # Miljöspecifika Helm values (DEV, STAGING, PROD)
-├── monitoring/             # Kluster-/runtime-specifik monitoring-konfiguration (ej GitOps-styrd)
 ├── policy/                 # Policy-as-Code (OPA/Rego) för validering av Kubernetes-manifester
 ├── docs/                   # Dokumentation och bilder som används i README
 ├── .gitignore              # Ignorerade filer och kataloger
