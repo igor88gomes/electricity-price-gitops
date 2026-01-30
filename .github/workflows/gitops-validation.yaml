@@ -17,7 +17,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Helm lint (Chart quality)
       - name: Setup Helm
         uses: azure/setup-helm@v4
         with:
@@ -37,7 +36,6 @@ jobs:
             argo \
             environments
 
-      # Render Helm templates (DEV / STAGING / PROD)
       - name: Render Helm templates (DEV / STAGING / PROD)
         run: |
           mkdir -p rendered
@@ -99,7 +97,7 @@ jobs:
       # conftest (OPA policies)
       - name: Install conftest
         run: |
-          # Get latest Conftest version from GitHub API (strip leading "v")
+          # Hämta senaste Conftest-versionen från GitHub API (ta bort inledande "v")
           LATEST_VERSION=$(curl -s https://api.github.com/repos/open-policy-agent/conftest/releases/latest \
             | grep '"tag_name":' \
             | sed -E 's/.*"v([^"]+)".*/\1/')
@@ -115,7 +113,6 @@ jobs:
           tar -xzf conftest.tar.gz
           sudo mv conftest /usr/local/bin/conftest
           conftest --version
-
 
       - name: Run conftest policies (if any)
         if: ${{ hashFiles('policy/*.rego') != '' }}
