@@ -123,5 +123,3 @@ jobs:
           conftest test rendered/dev.yaml
           conftest test rendered/staging.yaml
           conftest test rendered/prod.yaml
-
-# demo
