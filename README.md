@@ -21,20 +21,26 @@
 ## Projektöversikt
 
 ### Vad
-
-GitOps-repository som ansvarar för deklarativ deployment och miljö-promotion av Electricity Price-applikationen i Kubernetes via Helm och Argo CD.
+> GitOps-repository som definierar önskat tillstånd för deployment och miljö-promotion av
+> Electricity Price-applikationen i Kubernetes via Helm, vilket synkroniseras och appliceras
+> av Argo CD.
 
 ### Varför
-
-Separera applikationsutveckling (CI + artifact delivery) från deployment och runtime-konfiguration enligt GitOps-principer.
+> För att separera applikationsutveckling (CI och artifact delivery) från deployment och
+> runtime-konfiguration i ett kontrollerat leveransflöde.
 
 ### Värde
+> Möjliggör verifiering i drift av färdigbyggda container-artefakter i flera miljöer.
 
-Ger reproducerbara, spårbara och säkra deployment-flöden med immutable images, PR-baserad promotion (forward) och tydlig rollback-strategi.
+> Samma artefakt kan promouteras vidare utan rebuild via deklarativ konfiguration som
+> kontinuerligt synkroniseras mot klustret. 
+
+> Lösningen innehåller delar som observability, alerting, policyvalidering
+> och en definierad rollback-strategi vid incidenthantering.
 
 ### Avgränsningar
-
-Detta repo ansvarar inte för provisioning av Kubernetes-kluster, nätverk eller cloud-resurser. Ett existerande kluster förutsätts.
+> Detta repo ansvarar inte för provisioning av Kubernetes-kluster, nätverk eller
+> cloud-resurser. Ett existerande kluster förutsätts.
 
 ## Förutsättningar och kontext
 
