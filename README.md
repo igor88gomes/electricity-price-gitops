@@ -39,30 +39,15 @@
 > och en definierad rollback-strategi vid incidenthantering.
 
 ### Avgränsningar
-> Detta repo ansvarar inte för provisioning av Kubernetes-kluster, nätverk eller
-> cloud-resurser. Ett existerande kluster förutsätts.
 
-## Förutsättningar och kontext
+> Detta repository ansvarar inte för provisioning av Kubernetes-kluster,
+> nätverk eller underliggande infrastruktur.
 
-Detta GitOps-repository är utformat för att användas i en Kubernetes-baserad miljö där deployment och miljö-promotion hanteras deklarativt via GitOps-principer.
+> Ett existerande Kubernetes-kluster förutsätts, med Argo CD, Helm
+> och Prometheus Operator (kube-prometheus-stack) installerade.
 
-Lösningen förutsätter ett befintligt Kubernetes-kluster (t.ex. Minikube, OpenShift eller ett molnbaserat Kubernetes-kluster), där klustret och underliggande infrastruktur hanteras utanför detta repository och inte ingår i dess ansvarsområde.
-
-Lösningen utgår från följande tekniska val:
-
-- **Argo CD** används som GitOps-motor för att rendera Helm-manifester och applicera förändringar i klustret.
-
-- Applikationen deployas via ett **Helm chart (Helm v3)**, där samma chart används i DEV, STAGING och PROD med miljöspecifika `values.yaml`.
-
-- Observability och alerting bygger på en Prometheus Operator-baserad stack. Funktioner som **ServiceMonitor** och   **PrometheusRule** används där sådan infrastruktur finns tillgänglig.
-
-### Arkitekturellt val
-
-I denna lösning körs DEV, STAGING och PROD i separata namespaces inom samma Kubernetes-kluster.
-
-Detta ger logisk separation av resurser, konfiguration och deployment-flöden, samtidigt som gemensam plattformsinfrastruktur och klusterresurser delas.
-
-Valet är medvetet och möjliggör en reproducerbar och resurseffektiv demonstration av GitOps-flödet, med tydlig miljöuppdelning på applikations- och konfigurationsnivå.
+> Observability och alerting bygger på Prometheus-specifika CRDs
+> (ServiceMonitor, PrometheusRule). Annan stack kräver anpassning av manifests.
 
 ---
 
@@ -84,6 +69,12 @@ Valet är medvetet och möjliggör en reproducerbar och resurseffektiv demonstra
 > Projektet är demonstrerat med ett Kubernetes-kluster baserat på Minikube.
 
 ## Helhetsarkitektur 
+
+I denna lösning körs DEV, STAGING och PROD i separata namespaces inom samma Kubernetes-kluster.
+
+Detta ger logisk separation av resurser, konfiguration och deployment-flöden, samtidigt som gemensam plattformsinfrastruktur och klusterresurser delas.
+
+Valet är medvetet och möjliggör en reproducerbar och resurseffektiv demonstration av GitOps-flödet, med tydlig miljöuppdelning på applikations- och konfigurationsnivå.
 
 > Promotioner initieras av application-repositoryt via `repository_dispatch`. GitOps-repositoryt reagerar på `repository_dispatch`-events från application-repositoryt genom att skapa Pull Requests per miljö, vilka efter merge appliceras av Argo CD.
 
@@ -113,13 +104,13 @@ GitOps-repository
  
 ---
 
-## GitHub Actions – Pipelines i detta repository
+## GitHub Actions – Pipelines
 
 Detta GitOps-repository använder GitHub Actions för att hantera både **deployment/promotion** och **kvalitet, säkerhet och governance** i GitOps-flödet.
 
 Pipelines är uppdelade i två tydliga kategorier:
 
-### CD – GitOps Promotion & Deployment Pipelines
+### CD – Promotion & Deployment Pipelines
 
 #### `update-dev.yaml`
 - Skapar PR till DEV-values som refererar och pinnar det senast publicerade image-digestet i container-registret (byggt i application-repositoryt)
@@ -133,9 +124,9 @@ Pipelines är uppdelade i två tydliga kategorier:
 - Skapar PR till PROD-values som sätter release-tag (SemVer) och pinnar samma image-digest som har promouterats genom DEV och STAGING 
 - Vid merge: Argo CD sync → PROD-klustret
 
-### Kvalitet & Säkerhetspipelines
+### Kvalitet, Säkerhet & Governance Pipelines
 
-Utöver pipelines för miljö-promotion och deployment innehåller detta repository även pipelines för **validering, säkerhet och governance**. Dessa säkerställer att endast korrekta och säkra förändringar kan mergas och appliceras via GitOps.
+> Dessa bidrar till att minska risken för manuella fel samt höja säkerhetsnivån vid förändringar via GitOps-flödet.
 
 #### `gitops-validation.yaml`
 Körs vid Pull Requests för att:
@@ -309,9 +300,7 @@ Dashboarden fokuserar på **Golden Signals** och applikationshälsa:
 <p align="center">
   <img src="docs/images/grafana-application-observability-staging.png" alt="Grafana – Applikationsobservability i STAGING">
   <br>
-  <em>
-    Grafana-dashboard för applikationsobservability i STAGING-miljö.
-  </em>
+  <em>Grafana-dashboard för applikationsobservability i STAGING-miljö.</em>
 </p>
 
 ### Kubernetes Runtime Observability (STAGING)
@@ -328,10 +317,7 @@ Fokus ligger på **resursstatus och tillgänglighet**, oberoende av applikatione
 <p align="center">
   <img src="docs/images/grafana-kubernetes-runtime-staging.png" alt="Grafana – Kubernetes Runtime Observability i STAGING">
   <br>
-  <em>
-    Grafana-dashboard för plattformsobservability
-    (namespace: electricity-staging).
-  </em>
+  <em>Grafana-dashboard för plattformsobservability (namespace: electricity-staging).</em>
 </p>
 
 ---
@@ -367,22 +353,18 @@ Notifieringar skickas för både:
 
 Alerting har verifierats end-to-end genom ett kontrollerat tillgänglighetstest, vilket verifierade korrekt hantering av både  **FIRING** och **RESOLVED**.
 
-<p align="center">
-  <img src="docs/images/alert-staging-firing.png" alt="Alertmanager – FIRING">
-  <br>
-  <em>
-    Alertmanager-notifiering när Electricity Price-applikationen inte längre
-    kan skrapas av Prometheus.
-  </em>
+<p align="center" style="max-width:600px; margin: 0 auto 20px auto;">
+  <img src="docs/images/alert-staging-firing.png"
+       alt="Alertmanager – FIRING"
+       style="max-width:600px; width:100%; display:block; margin:0 auto;" />
+  <em>Alertmanager-notifiering när Electricity Price-applikationen inte längre kan skrapas av Prometheus.</em>
 </p>
 
-<p align="center">
-  <img src="docs/images/alert-staging-resolved.png" alt="Alertmanager – RESOLVED">
-  <br>
-  <em>
-    Alertmanager-notifiering när applikationen åter är tillgänglig och minst
-    en scrape-target är frisk.
-  </em>
+<p align="center" style="max-width:600px; margin: 0 auto 28px auto;">
+  <img src="docs/images/alert-staging-resolved.png"
+       alt="Alertmanager – RESOLVED"
+       style="max-width:600px; width:100%; display:block; margin:0 auto;" />
+  <em>Alertmanager-notifiering när applikationen åter är tillgänglig och minst en scrape-target är frisk.</em>
 </p>
 
 ## Relaterade repositories
