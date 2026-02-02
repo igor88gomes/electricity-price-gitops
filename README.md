@@ -159,7 +159,7 @@ Varje miljö representeras som en separat Argo CD-applikation och deployas till 
 <p align="center">
   <img src="docs/images/argocd-applications.png" alt="Argo CD Applications – DEV, STAGING och PROD">
   <br>
-  <em>Argo CD-applikationer för DEV, STAGING och PROD.</em>
+<em>Argo CD-applikationer som visualiserar GitOps-styrd promotion genom DEV → STAGING → PROD, där miljöerna uppdateras stegvis efter merge av Pull Requests i GitOps-repositoryt.</em>
 </p>
 
 ## Helm-rendering och deklarativ deployment
@@ -216,6 +216,8 @@ Deployment-flödet är helt deklarativt och följer GitOps-principer.
 
 ## Rollback Guide (Production Incident)
 
+> Rollback sker genom att uppdatera det deklarativa tillståndet i GitOps-repositoryt till ett tidigare verifierat image-digest, vilket Argo CD synkroniserar till klustret.
+
 ### Steg 1 — Identifiera vilket image-digest som körs i PROD
 
 - I **Argo CD**: öppna PROD-applikationen och notera det aktuella image-digestet
@@ -236,7 +238,7 @@ image:
   digest: sha256:<stabilt-digest>
 ```
 
-Commit → PR → Merge → Argo CD sync (ingen rebuild).
+Commit → PR → Merge → Argo CD synkroniserar till Kubernetes-klustret (ingen rebuild).
 
 **PROD återställs direkt.**  
 Detta är ett snabbt och kontrollerat sätt att stabilisera produktionen inom detta GitOps-flöde.
