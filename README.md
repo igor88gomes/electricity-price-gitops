@@ -102,6 +102,8 @@ GitOps-repository
 - GitOps-repositoryt ansvarar enbart för promotion och deployment av befintliga artifacts.
 - Promotion mellan miljöer sker via Pull Requests för full spårbarhet och återanvänder samma image-digest (ingen rebuild).
  
+---
+
 ## GitHub Actions – Pipelines
 
 Detta GitOps-repository använder GitHub Actions för att hantera både **deployment/promotion** och **kvalitet, säkerhet och governance** i GitOps-flödet.
