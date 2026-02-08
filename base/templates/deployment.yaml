@@ -47,6 +47,18 @@ spec:
           ports:
             - name: http
               containerPort: {{ .Values.service.targetPort }}
+
+{{- if (.Values.probes.startup.enabled | default false) }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.probes.startup.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.probes.startup.initialDelaySeconds | default 0 }}
+            periodSeconds: {{ .Values.probes.startup.periodSeconds | default 2 }}
+            timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds | default 2 }}
+            failureThreshold: {{ .Values.probes.startup.failureThreshold | default 45 }}
+{{- end }}
+
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.readiness.path }}

@@ -15,17 +15,24 @@ service:
   targetPort: 8000   
 
 probes:
+  startup:
+    enabled: false
+    path: /healthz
+    initialDelaySeconds: 0
+    periodSeconds: 2
+    timeoutSeconds: 2
+    failureThreshold: 45
   readiness:
     path: /readyz
     initialDelaySeconds: 40   
     periodSeconds: 10
-    timeoutSeconds: 8
+    timeoutSeconds: 10
     failureThreshold: 5
   liveness:
     path: /healthz
     initialDelaySeconds: 60   
     periodSeconds: 10
-    timeoutSeconds: 8
+    timeoutSeconds: 10
     failureThreshold: 5
 
 resources:
