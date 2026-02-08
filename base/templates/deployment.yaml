@@ -53,27 +53,27 @@ spec:
             httpGet:
               path: {{ .Values.probes.startup.path }}
               port: http
-            initialDelaySeconds: {{ .Values.probes.startup.initialDelaySeconds | default 0 }}
-            periodSeconds: {{ .Values.probes.startup.periodSeconds | default 2 }}
-            timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds | default 2 }}
-            failureThreshold: {{ .Values.probes.startup.failureThreshold | default 45 }}
+            initialDelaySeconds: {{ .Values.probes.startup.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
 {{- end }}
 
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.readiness.path }}
               port: http
-            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds | default 5 }}
-            periodSeconds: {{ .Values.probes.readiness.periodSeconds | default 10 }}
-            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds | default 3 }}
-            failureThreshold: {{ .Values.probes.readiness.failureThreshold | default 5 }}
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
           livenessProbe:
             httpGet:
               path: {{ .Values.probes.liveness.path }}
               port: http
-            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds | default 5 }}
-            periodSeconds: {{ .Values.probes.liveness.periodSeconds | default 10 }}
-            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds | default 3 }}
-            failureThreshold: {{ .Values.probes.liveness.failureThreshold | default 5 }}
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
           resources:
 {{- toYaml .Values.resources | nindent 12 }}
