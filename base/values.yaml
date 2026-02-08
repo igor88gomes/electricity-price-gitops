@@ -18,10 +18,10 @@ probes:
   startup:
     enabled: false
     path: /healthz
-    initialDelaySeconds: 0
-    periodSeconds: 2
-    timeoutSeconds: 2
-    failureThreshold: 45
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 24
   readiness:
     path: /readyz
     initialDelaySeconds: 40   
