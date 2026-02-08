@@ -4,7 +4,7 @@ image:
   digest: "sha256:74b4575e836d6cfcf8b7512aaa2715c8cae9092161d35b006725f8c91414f4c4"
 resources:
   requests: { cpu: 100m, memory: 256Mi }
-  limits:   { cpu: 400m, memory: 512Mi }
+  limits:   { cpu: 500m, memory: 512Mi }
   
 ingress:
   enabled: true
