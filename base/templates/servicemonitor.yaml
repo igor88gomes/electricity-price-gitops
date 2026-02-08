@@ -5,7 +5,7 @@ metadata:
   name: {{ include "electricity.fullname" . }}
   labels:
     app.kubernetes.io/name: electricity-price
-    {{- /* Svenska: extra etiketter för att matcha Prometheus' selector (t.ex. release: kube-prometheus-stack) */}}
+    {{- /* Extra etiketter för att matcha Prometheus' selector (t.ex. release: kube-prometheus-stack) */}}
     {{- with .Values.serviceMonitor.additionalLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
