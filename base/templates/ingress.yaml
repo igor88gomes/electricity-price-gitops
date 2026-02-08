@@ -15,7 +15,7 @@ spec:
   {{- end }}
   rules:
     {{- $fullName := include "electricity.fullname" . }}
-    {{- $svcPortName := .Values.service.name | default "http" }}
+    {{- $svcPortName := .Values.service.name }}
     {{- range .Values.ingress.hosts }}
     - host: {{ .host | quote }}
       http:

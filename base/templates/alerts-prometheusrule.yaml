@@ -5,9 +5,9 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: {{ include "electricity.fullname" . }}-alerts
-  namespace: {{ .Values.alerts.namespace | default "monitoring" }}
+  namespace: {{ .Values.alerts.namespace }}
   labels:
-    release: {{ .Values.alerts.releaseLabel | default "monitoring" }}
+    release: {{ .Values.alerts.releaseLabel }}
     app.kubernetes.io/name: electricity-price
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
@@ -23,14 +23,14 @@ spec:
                     service="{{ include "electricity.fullname" . }}"
                   }
                 ) == 0
-          for: {{ .Values.alerts.downFor | default "2m" }}
+          for: {{ .Values.alerts.downFor }}
           labels:
             severity: critical
             app: electricity-price
             env: "{{ $env }}"
           annotations:
             summary: "electricity-price is DOWN in {{ $targetNs }}"
-            description: "No 'up' scrape targets for electricity-price in namespace {{ $targetNs }} for at least {{ .Values.alerts.downFor | default "2m" }}."
+            description: "No 'up' scrape targets for electricity-price in namespace {{ $targetNs }} for at least {{ .Values.alerts.downFor }}."
 
         - alert: ElectricityPriceHighErrorRate
           expr: |
@@ -49,15 +49,15 @@ spec:
                   namespace="{{ $targetNs }}"
                 }[5m]
               )
-            ) > {{ .Values.alerts.errorRateThreshold | default 0.05 }}
-          for: {{ .Values.alerts.errorFor | default "5m" }}
+            ) > {{ .Values.alerts.errorRateThreshold }}
+          for: {{ .Values.alerts.errorFor }}
           labels:
             severity: warning
             app: electricity-price
             env: "{{ $env }}"
           annotations:
             summary: "High HTTP 5xx error rate in electricity-price ({{ $targetNs}})"
-            description: "More than {{ mul 100 (.Values.alerts.errorRateThreshold | default 0.05) }}% of HTTP requests returned 5xx status codes over the last {{ .Values.alerts.errorFor | default "5m" }} in namespace {{ $targetNs }}."
+            description: "More than {{ mul 100 (.Values.alerts.errorRateThreshold) }}% of HTTP requests returned 5xx status codes over the last {{ .Values.alerts.errorFor }} in namespace {{ $targetNs }}."
 
         - alert: ElectricityPriceHighLatencyP95
           expr: |
@@ -70,15 +70,15 @@ spec:
                   }[5m]
                 )
               )
-            ) > {{ .Values.alerts.latencyP95Seconds | default 0.5 }}
-          for: {{ .Values.alerts.latencyFor | default "5m" }}
+            ) > {{ .Values.alerts.latencyP95Seconds }}
+          for: {{ .Values.alerts.latencyFor }}
           labels:
             severity: warning
             app: electricity-price
             env: "{{ $env }}"
           annotations:
             summary: "High p95 response time for electricity-price in {{ $targetNs }}"
-            description: "95th percentile response time is above {{ .Values.alerts.latencyP95Seconds | default 0.5 }} seconds for at least {{ .Values.alerts.latencyFor | default "5m" }} in namespace {{ $targetNs }}."
+            description: "95th percentile response time is above {{ .Values.alerts.latencyP95Seconds }} seconds for at least {{ .Values.alerts.latencyFor }} in namespace {{ $targetNs }}."
 
         - alert: ElectricityPriceUpstreamErrorRateHigh
           expr: |
@@ -101,16 +101,16 @@ spec:
               ),
               1
             )
-            > {{ .Values.alerts.upstreamErrorRateThreshold | default 0.1 }}
+            > {{ .Values.alerts.upstreamErrorRateThreshold }}
 
-          for: {{ .Values.alerts.upstreamFor | default "10m" }}
+          for: {{ .Values.alerts.upstreamFor }}
           labels:
             severity: info
             app: electricity-price
             env: "{{ $env }}"
           annotations:
             summary: "High upstream error rate in electricity-price ({{ $targetNs }})"
-            description: "More than {{ mul 100 (.Values.alerts.upstreamErrorRateThreshold | default 0.1) }}% of upstream requests resulted in 'upstream_error' over the last {{ .Values.alerts.upstreamFor | default "10m" }} in namespace {{ $targetNs }}."
+            description: "More than {{ mul 100 (.Values.alerts.upstreamErrorRateThreshold) }}% of upstream requests resulted in 'upstream_error' over the last {{ .Values.alerts.upstreamFor }} in namespace {{ $targetNs }}."
 
         - alert: ElectricityPriceHighCpuUsage
           expr: |
@@ -123,15 +123,15 @@ spec:
                 }[5m]
               )
             ) by (pod)
-            > {{ .Values.alerts.cpuCoresThreshold | default 0.2 }}
-          for: {{ .Values.alerts.cpuFor | default "10m" }}
+            > {{ .Values.alerts.cpuCoresThreshold }}
+          for: {{ .Values.alerts.cpuFor }}
           labels:
             severity: warning
             app: electricity-price
             env: "{{ $env }}"
           annotations:
             summary: "High CPU usage per pod in electricity-price ({{ $targetNs }})"
-            description: "CPU usage per pod is above ~{{ .Values.alerts.cpuCoresThreshold | default 0.2 }} cores for at least {{ .Values.alerts.cpuFor | default "10m" }} in namespace {{ $targetNs }}."
+            description: "CPU usage per pod is above ~{{ .Values.alerts.cpuCoresThreshold }} cores for at least {{ .Values.alerts.cpuFor }} in namespace {{ $targetNs }}."
 
         - alert: ElectricityPriceHighMemoryUsage
           expr: |
@@ -142,15 +142,15 @@ spec:
                 image!=""
               }
             ) by (pod)
-            > {{ mul (.Values.alerts.memoryThresholdMi | default 400) 1024 1024 }}
-          for: {{ .Values.alerts.memoryFor | default "10m" }}
+            > {{ mul (.Values.alerts.memoryThresholdMi) 1024 1024 }}
+          for: {{ .Values.alerts.memoryFor }}
           labels:
             severity: warning
             app: electricity-price
             env: "{{ $env }}"
           annotations:
             summary: "High memory usage per pod in electricity-price ({{ $targetNs }})"
-            description: "Memory usage per pod is above ~{{ .Values.alerts.memoryThresholdMi | default 400 }}Mi for at least {{ .Values.alerts.memoryFor | default "10m" }} in namespace {{ $targetNs }}."
+            description: "Memory usage per pod is above ~{{ .Values.alerts.memoryThresholdMi }}Mi for at least {{ .Values.alerts.memoryFor }} in namespace {{ $targetNs }}."
 
         - alert: ElectricityPriceCrashLooping
           expr: |
@@ -160,7 +160,7 @@ spec:
                 container="app"
               }[5m]
             ) > 3
-          for: {{ .Values.alerts.crashFor | default "5m" }}
+          for: {{ .Values.alerts.crashFor }}
           labels:
             severity: critical
             app: electricity-price
