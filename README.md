@@ -148,7 +148,9 @@ Dedikerad pipeline för **secret scanning** i GitOps-repot:
 
 ## Argo CD Integration
 
-Argo CD används för att applicera och synkronisera GitOps-konfigurationen till Kubernetes-klustret.
+Argo CD ansvarar för GitOps-synken genom att läsa önskat tillstånd från Git, använda Helm för rendering av manifests och applicera resurserna mot klustret via **Kubernetes API** (control plane).
+
+Flödet fungerar därför både lokalt i **Minikube** och i andra Kubernetes-kluster, förutsatt att Argo CD har åtkomst till API-servern och korrekt RBAC-konfiguration.
 
 Varje miljö representeras som en separat Argo CD-applikation och deployas till ett eget namespace:
 
@@ -179,6 +181,9 @@ Deployment-flödet är helt deklarativt och följer GitOps-principer.
 | PrometheusRule | Definierar applikationsspecifika alerts                         |
 | NetworkPolicy  | Begränsar nätverkstrafik till och från applikationen            |
 | Helm helpers   | Gemensam namngivning, labels och annotations via `_helpers.tpl` |
+
+> **NetworkPolicy:** Endast ingress-controller och monitoring har åtkomst till applikationen som standard.  
+> För interna tester kan policyn utökas eller tillfälligt inaktiveras per miljö.
 
 ###  Miljöer
 
