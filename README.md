@@ -8,14 +8,19 @@
 
 # Electricity Price Sweden — GitOps Repository
 
-> GitOps repository som styr deployment av *Electricity-Price*-applikationen genom Helm + Argo CD. Detta repository arbetar tillsammans med **electricity-price** (application repository), som ansvarar för CI och artifact-CD, medan **electricity-price-gitops** ansvarar för deployment-CD till Kubernetes-klustret.
+> GitOps repository som styr deployment av *Electricity-Price*-applikationen genom Helm + Argo CD. Detta repository arbetar tillsammans med **electricity-price** (application repository), som ansvarar för CI och artifact delivery, medan **electricity-price-gitops** ansvarar för deployment-CD till Kubernetes-klustret.
+
+## Relaterade Repository
+
+**Application (CI & artifact delivery):** https://github.com/igor88gomes/electricity-price
 
 ---
+## GitOps-arkitektur och promotionsflöde
 
 <p align="center">
   <img src="docs/images/architecture.png" alt="Applikation och GitOps-arkitektur">
   <br>
-  <em>Övergripande flöde för applikation och GitOps-leverans.</em>
+  <em>Övergripande GitOps-flöde för miljö-promotion med immutable image-digest.</em>
 </p>
 
 ## Projektöversikt
@@ -373,11 +378,6 @@ Alerting har verifierats end-to-end genom ett kontrollerat tillgänglighetstest,
        style="max-width:600px; width:100%; display:block; margin:0 auto;" />
   <em>Alertmanager-notifiering när applikationen åter är tillgänglig och minst en scrape-target är frisk.</em>
 </p>
-
-## Relaterade repositories
-
-**Application Repository:**  
-https://github.com/igor88gomes/electricity-price
 
 ## Repository‑struktur
 
