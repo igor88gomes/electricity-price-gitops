@@ -59,7 +59,7 @@
 | **Helm**                      | Templating av Kubernetes-manifester                        |
 | **Kubernetes**                | Deployment i DEV / STAGING / PROD-miljöer                  |
 | **GHCR**                      | Container registry för applikations-images                 |
-|**kube-prometheus-stack**      | Installerar Prometheus, Grafana, Alertmanager              |
+| **kube-prometheus-stack**     | Installerar Prometheus, Grafana, Alertmanager              |
 | **ServiceMonitor (CRD)**      | Kopplar appens `/metrics` till Prometheus-scraping         |
 | **Ingress Controller**        | NGINX ingress-lösning                                      |
 | **Policy-as-Code (OPA/Rego)** | Säkerhets- och compliance-regler för Kubernetes-manifester |
