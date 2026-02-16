@@ -39,16 +39,6 @@ alerts:
 
   errorRateThreshold: 0.02
   latencyP95Seconds: 0.3
-  cpuCoresThreshold: 0.15
-  memoryThresholdMi: 300
-
-  downFor: 2m
-  errorFor: 5m
-  latencyFor: 5m
-  cpuFor: 10m
-  memoryFor: 10m
-  crashFor: 5m
-
+  cpuCoresThreshold: 0.30
   upstreamErrorRateThreshold: 0.10
-  upstreamFor: 10m
 
