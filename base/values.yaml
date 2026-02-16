@@ -89,3 +89,4 @@ alerts:
 
   upstreamErrorRateThreshold: 0.15
   upstreamFor: 10m
+
