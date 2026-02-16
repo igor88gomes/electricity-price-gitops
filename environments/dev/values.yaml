@@ -3,10 +3,6 @@ image:
   tag: dev-512b230
   digest: "sha256:c963e6512bc989d30f5ee2f003f107811b746c8ca815380181c029589f740de5"
 
-resources:
-  requests: { cpu: 175m, memory: 256Mi }
-  limits:   { cpu: 300m, memory: 512Mi }
-
 probes:
   startup:
     enabled: true
@@ -34,4 +30,5 @@ serviceMonitor:
 
 alerts:
   enabled: false
+
 
