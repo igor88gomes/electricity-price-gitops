@@ -226,7 +226,7 @@ Deployment-flödet är helt deklarativt och följer GitOps-principer.
 
 ## Rollback Guide (Production Incident)
 
-> Rollback sker genom att uppdatera det deklarativa tillståndet i GitOps-repositoryt till ett tidigare verifierat image-digest, vilket Argo CD synkroniserar till klustret.
+> Rollback sker genom att uppdatera det deklarativa önskade tillståndet i GitOps-repositoryt till en tidigare verifierad container-artefakt (image-digest). Argo CD synkroniserar därefter det önskade tillståndet mot Kubernetes-klustret utan rebuild.
 
 ### Steg 1 — Identifiera vilket image-digest som körs i PROD
 
@@ -252,6 +252,8 @@ Commit → PR → Merge → Argo CD synkroniserar till Kubernetes-klustret (inge
 
 **PROD återställs direkt.**  
 Detta är ett snabbt och kontrollerat sätt att stabilisera produktionen inom detta GitOps-flöde.
+
+> Alternativt kan en tidigare Pull Request eller commit i GitOps-repot revertas till ett känt stabilt deklarativt tillstånd för snabb rollback.
 
 > **Notera:**  
 > Detta rollback återställer ett tidigare stabilt tillstånd.  
