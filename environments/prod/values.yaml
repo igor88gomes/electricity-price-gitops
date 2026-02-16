@@ -3,8 +3,8 @@ image:
   tag: v1.0.2
   digest: "sha256:74b4575e836d6cfcf8b7512aaa2715c8cae9092161d35b006725f8c91414f4c4"
 resources:
-  requests: { cpu: 100m, memory: 256Mi }
-  limits:   { cpu: 500m, memory: 512Mi }
+  requests: { cpu: 300m, memory: 512Mi }
+  limits:   { cpu: 600m, memory: 1Gi }
   
 ingress:
   enabled: true
