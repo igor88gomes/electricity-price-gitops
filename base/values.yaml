@@ -37,8 +37,8 @@ probes:
 
 resources:
   requests:
-    cpu: 50m
-    memory: 128Mi
+    cpu: 150m
+    memory: 256Mi
   limits:
     cpu: 300m        
     memory: 512Mi    
@@ -76,9 +76,9 @@ alerts:
   targetNamespace: ""
 
   errorRateThreshold: 0.05
-  latencyP95Seconds: 0.5
-  cpuCoresThreshold: 0.2
-  memoryThresholdMi: 400
+  latencyP95Seconds: 0.75
+  cpuCoresThreshold: 0.25
+  memoryThresholdMi: 450
 
   downFor: 2m
   errorFor: 5m
@@ -87,9 +87,5 @@ alerts:
   memoryFor: 10m
   crashFor: 5m
 
-  upstreamErrorRateThreshold: 0.1
+  upstreamErrorRateThreshold: 0.15
   upstreamFor: 10m
-
-
-
-

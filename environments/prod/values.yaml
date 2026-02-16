@@ -32,18 +32,7 @@ alerts:
   env: prod
   targetNamespace: electricity-prod
 
-  errorRateThreshold: 0.05
   latencyP95Seconds: 0.5
-  cpuCoresThreshold: 0.25
-  memoryThresholdMi: 500
-
-  downFor: 2m
-  errorFor: 5m
-  latencyFor: 5m
-  cpuFor: 10m
-  memoryFor: 10m
-  crashFor: 5m
-
-  upstreamErrorRateThreshold: 0.15
-  upstreamFor: 10m
+  cpuCoresThreshold: 0.45
+  memoryThresholdMi: 800
 
