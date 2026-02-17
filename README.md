@@ -113,25 +113,23 @@ GitOps-repository
 
 Detta GitOps-repository använder GitHub Actions för att hantera både **deployment/promotion** och **kvalitet, säkerhet och governance** i GitOps-flödet.
 
-Pipelines är uppdelade i två tydliga kategorier:
-
 ### CD – Promotion & Deployment Pipelines
 
 #### `update-dev.yaml`
 - Skapar PR till DEV-values som refererar och pinnar det senast publicerade image-digestet i container-registret (byggt i application-repositoryt)
-- Vid merge: Argo CD sync → DEV-klustret
+- Vid auto-merge: Argo CD sync → DEV-klustret
 
 #### `promotion-handler.yaml`
 - Skapar PR till STAGING-values som refererar och pinnar det image-digest som är deployat i DEV
-- Vid merge: Argo CD sync → STAGING-klustret
+- Vid manuell merge: Argo CD sync → STAGING-klustret
 
 #### `prod-release-handler.yaml`
 - Skapar PR till PROD-values som sätter release-tag (SemVer) och pinnar samma image-digest som har promouterats genom DEV och STAGING 
-- Vid merge: Argo CD sync → PROD-klustret
+- Vid manuell merge: Argo CD sync → PROD-klustret
 
 ### Kvalitet, Säkerhet & Governance Pipelines
 
-> Dessa bidrar till att minska risken för manuella fel samt höja säkerhetsnivån vid förändringar via GitOps-flödet.
+> Dessa pipelines körs automatiskt vid förändringar i GitOps-repositoryt för att säkerställa att endast validerade och säkra manifests deployas till klustret.
 
 #### `gitops-validation.yaml`
 Körs vid Pull Requests för att:
@@ -147,7 +145,7 @@ Dedikerad pipeline för **secret scanning** i GitOps-repot:
 - Identifierar potentiella credentials och hemligheter
 - Failar workflow vid upptäckt av secrets
 
-> Skyddar GitOps-repositoryt från att oavsiktligt innehålla känslig information. (Supply-chain- och artifact-security hanteras i application-repositoryt.)
+> Skyddar GitOps-repositoryt från att oavsiktligt innehålla känslig information.
 
 ---
 
