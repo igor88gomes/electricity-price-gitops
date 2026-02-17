@@ -72,15 +72,16 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Skapa en branch baserad på taggen
           BR="${{ env.BR_PREFIX }}${{ steps.meta.outputs.TAG }}"
           git switch -c "$BR"
 
-          # Update tag
+          # Uppdatera image tag i DEV values
           sed -i -E \
             -e 's|^([[:space:]]*tag:).*|\1 '"${{ steps.meta.outputs.TAG }}"'|' \
             "${{ env.DEV_FILE }}"
 
-          # Ensure/Update digest
+          # Säkerställ/uppdatera digest (lägg till om den saknas)
           if grep -qE '^\s*digest:' "${{ env.DEV_FILE }}"; then
             sed -i -E \
               -e 's|^([[:space:]]*digest:).*|\1 "'"${{ steps.meta.outputs.DIGEST }}"'"|' \
@@ -96,7 +97,7 @@ jobs:
 
           git add "${{ env.DEV_FILE }}"
 
-          # If nothing changed, skip commit/PR gracefully.
+          # Om inget ändrades: hoppa över commit och PR 
           if git diff --staged --quiet; then
             echo "NO_CHANGES=true" >> $GITHUB_OUTPUT
             echo "No changes detected; skipping commit and PR."
@@ -110,12 +111,25 @@ jobs:
           echo "NO_CHANGES=false" >> $GITHUB_OUTPUT
 
       - name: Open pull request
+        id: pr
+        if: steps.apply.outputs.NO_CHANGES == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PR_URL="$(gh pr create \
+            --base main \
+            --head "${{ env.BR_PREFIX }}${{ steps.meta.outputs.TAG }}" \
+            --title "chore(gitops): DEV → ${{ steps.meta.outputs.TAG }}" \
+            --body  "Update DEV image:\n\n- \`${{ env.DEV_FILE }}\`\n  - tag: \`${{ steps.meta.outputs.TAG }}\`\n  - digest: \`${{ steps.meta.outputs.DIGEST }}\`")"
+
+          echo "PR_URL=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Enable auto-merge (DEV)
         if: steps.apply.outputs.NO_CHANGES == 'false'
         env:
           GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
         run: |
-          gh pr create \
-            --base main \
-            --head "${{ env.BR_PREFIX }}${{ steps.meta.outputs.TAG }}" \
-            --title "chore(gitops): DEV → ${{ steps.meta.outputs.TAG }}" \
-            --body  "Update DEV image:\n\n- \`${{ env.DEV_FILE }}\`\n  - tag: \`${{ steps.meta.outputs.TAG }}\`\n  - digest: \`${{ steps.meta.outputs.DIGEST }}\`"
+          gh pr merge "${{ steps.pr.outputs.PR_URL }}" --auto --squash --delete-branch
