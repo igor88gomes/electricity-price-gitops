@@ -72,9 +72,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Skapa en branch baserad på taggen
-          BR="${{ env.BR_PREFIX }}${{ steps.meta.outputs.TAG }}"
+          # Gör branchnamnet unikt per digest (undviker "push rejected (fetch first)" vid rerun)
+          BR="${{ env.BR_PREFIX }}${{ steps.meta.outputs.TAG }}-${{ steps.meta.outputs.SHORT }}"
           git switch -c "$BR"
+
+          # Exportera branchnamn så att följande steg använder exakt samma (ingen manuell rekonstruktion)
+          echo "BR=$BR" >> "$GITHUB_OUTPUT"
 
           # Uppdatera image tag i DEV values
           sed -i -E \
@@ -118,18 +121,35 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
+          
+          # Använd exakt branchnamn från apply-steget (undviker mismatch)
           PR_URL="$(gh pr create \
             --base main \
-            --head "${{ env.BR_PREFIX }}${{ steps.meta.outputs.TAG }}" \
+            --head "${{ steps.apply.outputs.BR }}" \
             --title "chore(gitops): DEV → ${{ steps.meta.outputs.TAG }}" \
             --body  "Update DEV image:\n\n- \`${{ env.DEV_FILE }}\`\n  - tag: \`${{ steps.meta.outputs.TAG }}\`\n  - digest: \`${{ steps.meta.outputs.DIGEST }}\`")"
 
           echo "PR_URL=$PR_URL" >> "$GITHUB_OUTPUT"
-
-      - name: Enable auto-merge (DEV)
+            
+      - name: Merge PR (immediate or enable auto-merge - DEV)
         if: steps.apply.outputs.NO_CHANGES == 'false'
         env:
           GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
-          gh pr merge "${{ steps.pr.outputs.PR_URL }}" --auto --squash --delete-branch
+          set -euo pipefail
+
+          PR="${{ steps.pr.outputs.PR_URL }}"
+ 
+          # Om PR är i "CLEAN"-status → utför automatisk merge direkt.
+          # Annars aktivera auto-merge så att GitHub utför merge automatiskt när required checks är godkända.
+          state="$(gh pr view "$PR" --json mergeStateStatus -q .mergeStateStatus)"
+
+          echo "mergeStateStatus=$state"
+
+          if [[ "$state" == "CLEAN" ]]; then
+            gh pr merge "$PR" --squash --delete-branch
+          else
+            gh pr merge "$PR" --auto --squash --delete-branch
+          fi
+
