@@ -131,7 +131,7 @@ jobs:
 
           echo "PR_URL=$PR_URL" >> "$GITHUB_OUTPUT"
             
-      - name: Merge PR (immediate or enable auto-merge - DEV)
+      - name: Merge PR (enable auto-merge - DEV)
         if: steps.apply.outputs.NO_CHANGES == 'false'
         env:
           GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
@@ -140,16 +140,4 @@ jobs:
           set -euo pipefail
 
           PR="${{ steps.pr.outputs.PR_URL }}"
- 
-          # Om PR är i "CLEAN"-status → utför automatisk merge direkt.
-          # Annars aktivera auto-merge så att GitHub utför merge automatiskt när required checks är godkända.
-          state="$(gh pr view "$PR" --json mergeStateStatus -q .mergeStateStatus)"
-
-          echo "mergeStateStatus=$state"
-
-          if [[ "$state" == "CLEAN" ]]; then
-            gh pr merge "$PR" --squash --delete-branch
-          else
-            gh pr merge "$PR" --auto --squash --delete-branch
-          fi
-
+          gh pr merge "$PR" --auto --squash --delete-branch
