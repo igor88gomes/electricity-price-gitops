@@ -2,7 +2,7 @@ name: GitOps - Release PROD (by SemVer + digest)
 
 on:
   repository_dispatch:
-    types: [release-prod]   # Förväntar sig payload.client_payload.version + .digest
+    types: [release-prod]
   workflow_dispatch:
     inputs:
       version:
@@ -15,7 +15,7 @@ on:
         type: string
 
 permissions:
-  contents: write            # Behövs för att skapa branch/commit/PR
+  contents: write
   pull-requests: write
 
 env:
@@ -31,7 +31,6 @@ jobs:
         id: meta
         shell: bash
         run: |
-          # Hämta version + digest från repository_dispatch eller workflow_dispatch
           if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
             V="${{ github.event.client_payload.version }}"
             D="${{ github.event.client_payload.digest }}"
@@ -40,63 +39,68 @@ jobs:
             D="${{ inputs.digest }}"
           fi
 
-          # Trimma bort ledande/efterföljande whitespace (inkl. radbrytningar)
           V="$(echo "$V" | xargs)"
           D="$(echo "$D" | xargs)"
 
           echo "Got VERSION='$V'"
           echo "Got DIGEST='$D'"
 
-          # Enkel validering av SemVer-taggen (t.ex. v0.1.0)
           if [[ -z "$V" || "$V" != v*.*.* ]]; then
             echo "ERROR: version must look like vX.Y.Z (got '$V')" >&2
             exit 1
           fi
 
-          # Strikt validering av digest-formatet: sha256:<64 hextecken>
           if ! [[ "$D" =~ ^sha256:[0-9a-f]{64}$ ]]; then
             echo "ERROR: digest must be like sha256:<64-hex> (got '$D')" >&2
             exit 1
           fi
 
-          # Exportera värden till följande steg
           echo "VERSION=$V" >> "$GITHUB_OUTPUT"
           echo "DIGEST=$D"  >> "$GITHUB_OUTPUT"
+          echo "SHORT=${D:7:12}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout GitOps repo
         uses: actions/checkout@v4
 
       - name: Create branch and update PROD values
+        id: apply
         shell: bash
         run: |
           set -euo pipefail
-          BR="${{ env.BR_PREFIX }}${{ steps.meta.outputs.VERSION }}"
 
-          # Skapa ny release-branch för PROD
+          # Ändring: unik branch per version + digest för att undvika fetch-first vid rerun
+          BR="${{ env.BR_PREFIX }}${{ steps.meta.outputs.VERSION }}-${{ steps.meta.outputs.SHORT }}"
           git switch -c "$BR"
 
-          # Uppdatera image.tag och image.digest i PROD values
+          echo "BR=$BR" >> "$GITHUB_OUTPUT"
+
           sed -i -E \
             -e 's|^([[:space:]]*tag:).*|\1 '"${{ steps.meta.outputs.VERSION }}"'|' \
             -e 's|^([[:space:]]*digest:).*|\1 "'"${{ steps.meta.outputs.DIGEST }}"'"|' \
             "${{ env.PROD_VALUES_FILE }}"
 
-          # Endast values uppdateras och ArgoCD-appen spårar alltid 'main'-branchen
           git add "${{ env.PROD_VALUES_FILE }}"
+
+          if git diff --staged --quiet; then
+            echo "NO_CHANGES=true" >> "$GITHUB_OUTPUT"
+            echo "No changes detected; skipping commit and PR."
+            exit 0
+          fi
 
           git -c user.name="github-actions[bot]" \
               -c user.email="github-actions[bot]@users.noreply.github.com" \
               commit -m "release(gitops): PROD -> ${{ steps.meta.outputs.VERSION }}"
 
           git push -u origin "$BR"
+          echo "NO_CHANGES=false" >> "$GITHUB_OUTPUT"
 
       - name: Open pull request
+        if: steps.apply.outputs.NO_CHANGES == 'false'
         env:
           GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
         run: |
-          # Skapa PR mot main för PROD-release
           gh pr create \
             --base main \
-            --head "${{ env.BR_PREFIX }}${{ steps.meta.outputs.VERSION }}" \
+            --head "${{ steps.apply.outputs.BR }}" \
             --title "release(gitops): PROD -> ${{ steps.meta.outputs.VERSION }}" \
             --body  "Promote PROD to image digest \`${{ steps.meta.outputs.DIGEST }}\`.\n\n- Updated \`${{ env.PROD_VALUES_FILE }}\` with \`tag: ${{ steps.meta.outputs.VERSION }}\` and \`digest: ${{ steps.meta.outputs.DIGEST }}\`."
