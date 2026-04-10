@@ -8,7 +8,25 @@
 
 # Electricity Price Sweden — GitOps Repository
 
-> GitOps repository som styr deployment av *Electricity-Price*-applikationen genom Helm + Argo CD. Detta repository arbetar tillsammans med **electricity-price** (application repository), som ansvarar för CI och artifact delivery, medan **electricity-price-gitops** ansvarar för deployment-CD till Kubernetes-klustret.
+> GitOps-repository som hanterar deployment av *Electricity-Price*-applikationen via Helm och Argo CD, i samspel med application-repositoryt som ansvarar för CI och artifact delivery.
+
+## Översikt
+
+### Det här repositoryt ansvarar för
+- deployment och miljö-promotion (DEV → STAGING → PROD)
+- runtime-konfiguration och Helm-baserad deployment
+- validering, säkerhet och policy enforcement
+- observability, dashboards och alerting i Kubernetes
+- rollback genom deklarativ GitOps-styrning
+
+### Separat application-repository ansvarar för
+- applikationskod
+- tester, lint och coverage
+- säkerhetsskanning
+- build och publicering av container image (artifact)
+- triggar deployment till detta GitOps-repository
+
+> Tillsammans visar de ett komplett flöde från applikationskod och artifact delivery till deployment, observability och miljö-promotion via GitOps i ett Kubernetes-kluster.
 
 ## Relaterade Repository
 
@@ -401,4 +419,4 @@ electricity-price-gitops/
 
 Igor Gomes — DevOps Engineer  
 **E-post:** [igor88gomes@gmail.com](mailto:igor88gomes@gmail.com)  
-**LinkedIn:** [linkedin.com/in/igor-gomes-5b6184290](https://www.linkedin.com/in/igor-gomes-5b6184290)
+**LinkedIn:** [Igor Gomes](https://www.linkedin.com/in/igor-gomes-5b6184290)
