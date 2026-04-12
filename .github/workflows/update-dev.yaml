@@ -131,7 +131,14 @@ jobs:
 
           echo "PR_URL=$PR_URL" >> "$GITHUB_OUTPUT"
             
-      - name: Merge PR (enable auto-merge - DEV)
+      - name: Ensure jq is available
+        if: steps.apply.outputs.NO_CHANGES == 'false'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Enable auto-merge for DEV PR
         if: steps.apply.outputs.NO_CHANGES == 'false'
         env:
           GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
@@ -139,5 +146,59 @@ jobs:
         run: |
           set -euo pipefail
 
-          PR="${{ steps.pr.outputs.PR_URL }}"
-          gh pr merge "$PR" --auto --squash --delete-branch
+          PR_URL="${{ steps.pr.outputs.PR_URL }}"
+
+          if [[ -z "$PR_URL" ]]; then
+            echo "ERROR: PR URL is empty"
+            exit 1
+          fi
+
+          PR_NUMBER="$(gh pr view "$PR_URL" --json number --jq '.number')"
+
+          echo "Waiting for PR #$PR_NUMBER to become eligible for auto-merge..."
+
+          for attempt in {1..12}; do
+            echo "Attempt $attempt/12"
+
+            PR_STATE="$(gh pr view "$PR_NUMBER" --json state,isDraft,mergeStateStatus,statusCheckRollup \
+              --jq '{state: .state, isDraft: .isDraft, mergeStateStatus: .mergeStateStatus, checks: (.statusCheckRollup // [])}')"
+
+            echo "$PR_STATE"
+
+            STATE="$(echo "$PR_STATE" | jq -r '.state')"
+            IS_DRAFT="$(echo "$PR_STATE" | jq -r '.isDraft')"
+            MERGE_STATE_STATUS="$(echo "$PR_STATE" | jq -r '.mergeStateStatus')"
+
+            if [[ "$STATE" != "OPEN" ]]; then
+              echo "PR is not open anymore"
+              exit 1
+            fi
+
+            if [[ "$IS_DRAFT" == "true" ]]; then
+              echo "PR is still draft, waiting..."
+              sleep 10
+              continue
+            fi
+
+            case "$MERGE_STATE_STATUS" in
+              CLEAN|HAS_HOOKS|UNSTABLE)
+                echo "PR looks eligible, trying to enable auto-merge..."
+                if gh pr merge "$PR_NUMBER" --auto --squash --delete-branch; then
+                  echo "Auto-merge enabled successfully"
+                  exit 0
+                fi
+                echo "Auto-merge attempt failed, retrying..."
+                ;;
+              BLOCKED|BEHIND|DIRTY|DRAFT|UNKNOWN)
+                echo "PR not ready yet (mergeStateStatus=$MERGE_STATE_STATUS), waiting..."
+                ;;
+              *)
+                echo "PR still not ready (mergeStateStatus=$MERGE_STATE_STATUS), waiting..."
+                ;;
+            esac
+
+            sleep 10
+          done
+
+          echo "ERROR: Could not enable auto-merge after multiple attempts"
+          exit 1
