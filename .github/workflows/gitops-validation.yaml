@@ -111,9 +111,21 @@ jobs:
       # conftest (OPA policies)
       - name: Install conftest
         run: |
-          VERSION=0.46.0
+          # Fetch latest Conftest version from GitHub API (remove leading "v")
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/open-policy-agent/conftest/releases/latest \
+            | grep '"tag_name":' \
+            | sed -E 's/.*"v([^"]+)".*/\1/')
 
-          curl -sSfL "https://github.com/open-policy-agent/conftest/releases/download/v${VERSION}/conftest_${VERSION}_Linux_x86_64.tar.gz" \
+          SYSTEM=$(uname -s)
+          ARCH=$(uname -m)
+
+          if [[ "$ARCH" == "x86_64" ]]; then
+            ARCH="amd64"
+          fi
+
+          echo "Installing conftest ${LATEST_VERSION} for ${SYSTEM} ${ARCH}"
+
+          curl -sSfL "https://github.com/open-policy-agent/conftest/releases/download/v${LATEST_VERSION}/conftest_${LATEST_VERSION}_${SYSTEM}_${ARCH}.tar.gz" \
             -o conftest.tar.gz
 
           tar -xzf conftest.tar.gz
