@@ -119,10 +119,6 @@ jobs:
           SYSTEM=$(uname -s)
           ARCH=$(uname -m)
 
-          if [[ "$ARCH" == "x86_64" ]]; then
-            ARCH="amd64"
-          fi
-
           echo "Installing conftest ${LATEST_VERSION} for ${SYSTEM} ${ARCH}"
 
           curl -sSfL "https://github.com/open-policy-agent/conftest/releases/download/v${LATEST_VERSION}/conftest_${LATEST_VERSION}_${SYSTEM}_${ARCH}.tar.gz" \
