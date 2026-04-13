@@ -123,6 +123,6 @@ jobs:
       - name: Run conftest policies (if any)
         if: ${{ hashFiles('policy/*.rego') != '' }}
         run: |
-          conftest test rendered/dev.yaml
-          conftest test rendered/staging.yaml
-          conftest test rendered/prod.yaml
+          conftest test --parser=v0 rendered/dev.yaml
+          conftest test --parser=v0 rendered/staging.yaml
+          conftest test --parser=v0 rendered/prod.yaml
