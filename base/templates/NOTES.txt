@@ -1,18 +1,18 @@
-1. Applikationen exponeras som ClusterIP på port {{ .Values.service.port }}.
+1. The application is exposed as a ClusterIP service on port {{ .Values.service.port }}.
 
-2. Prova readiness:
-   kubectl -n <ns> exec -it <pod> -- curl -s localhost:{{ .Values.service.targetPort }}{{ .Values.probes.readiness.path }}
+2. Readiness check:
+   kubectl -n <namespace> exec -it <pod> -- curl -s localhost:{{ .Values.service.targetPort }}{{ .Values.probes.readiness.path }}
 
-3. Metrik (Prometheus):
-   aktiverat via ServiceMonitor om serviceMonitor.enabled=true.
+3. Metrics (Prometheus):
+   Enabled via ServiceMonitor when serviceMonitor.enabled=true.
 
-4. Ingress (om aktiverad):
-   när .Values.ingress.enabled=true exponeras applikationen via Ingress.
+4. Ingress (if enabled):
+   When .Values.ingress.enabled=true, the application is exposed via Ingress.
 
-   Exempel på hosts per miljö (kan variera beroende på values):
+   Example hosts per environment (may vary depending on values):
      - DEV:     http://dev.electricity-price.local
      - STAGING: http://staging.electricity-price.local
      - PROD:    http://prod.electricity-price.local
 
-   I lokala kluster (t.ex. Minikube) kan du behöva lägga till motsvarande
-   poster i /etc/hosts mot klustrets IP.
+   In local clusters (e.g. Minikube), you may need to add corresponding
+   entries in /etc/hosts pointing to the cluster IP.

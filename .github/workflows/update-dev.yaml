@@ -2,7 +2,7 @@ name: GitOps - Update DEV (by tag + digest)
 
 on:
   repository_dispatch:
-    types: [update-dev]   # Förväntar client_payload: { "tag": "...", "digest": "sha256:..." }
+    types: [update-dev]   # Expects client_payload: { "tag": "...", "digest": "sha256:..." }
   workflow_dispatch:
     inputs:
       tag:
@@ -30,7 +30,7 @@ jobs:
         id: meta
         shell: bash
         run: |
-          # Stöd både repository_dispatch och manuell körning (workflow_dispatch).
+          # Support both repository_dispatch and manual execution (workflow_dispatch).
           if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
             TAG="${{ github.event.client_payload.tag }}"
             DIGEST="${{ github.event.client_payload.digest }}"
@@ -39,26 +39,26 @@ jobs:
             DIGEST="${{ inputs.digest }}"
           fi
 
-          # Trimma bort ledande/efterföljande whitespace (inkl. radbrytningar)
+          # Trim leading/trailing whitespace (including newlines)
           TAG="$(echo "$TAG" | xargs)"
           DIGEST="$(echo "$DIGEST" | xargs)"
 
           echo "Got TAG='$TAG'"
           echo "Got DIGEST='$DIGEST'"
 
-          # Enkel validering av tag (måste finnas, t.ex. dev-<sha7>)
+          # Basic validation of tag (must exist, e.g. dev-<sha7>)
           if [[ -z "$TAG" ]]; then
             echo "ERROR: tag is required" >&2
             exit 1
           fi
 
-          # Strikt validering av digest-formatet: sha256:<64 hextecken>
+          # Strict validation of digest format: sha256:<64 hex characters>
           if ! [[ "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
             echo "ERROR: digest must be like sha256:<hash> (got '$DIGEST')" >&2
             exit 1
           fi
 
-          # Exportera värden till följande steg
+          # Export values to next steps
           echo "TAG=$TAG" >> $GITHUB_OUTPUT
           echo "DIGEST=$DIGEST" >> $GITHUB_OUTPUT
           echo "SHORT=${DIGEST:7:12}" >> $GITHUB_OUTPUT
@@ -72,19 +72,19 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Gör branchnamnet unikt per digest (undviker "push rejected (fetch first)" vid rerun)
+          # Make branch name unique per digest (avoids "push rejected (fetch first)" on rerun)
           BR="${{ env.BR_PREFIX }}${{ steps.meta.outputs.TAG }}-${{ steps.meta.outputs.SHORT }}"
           git switch -c "$BR"
 
-          # Exportera branchnamn så att följande steg använder exakt samma (ingen manuell rekonstruktion)
+          # Export branch name for later steps
           echo "BR=$BR" >> "$GITHUB_OUTPUT"
 
-          # Uppdatera image tag i DEV values
+          # Update image tag in DEV values
           sed -i -E \
             -e 's|^([[:space:]]*tag:).*|\1 '"${{ steps.meta.outputs.TAG }}"'|' \
             "${{ env.DEV_FILE }}"
 
-          # Säkerställ/uppdatera digest (lägg till om den saknas)
+          # Ensure/update digest (add if missing)
           if grep -qE '^\s*digest:' "${{ env.DEV_FILE }}"; then
             sed -i -E \
               -e 's|^([[:space:]]*digest:).*|\1 "'"${{ steps.meta.outputs.DIGEST }}"'"|' \
@@ -100,7 +100,7 @@ jobs:
 
           git add "${{ env.DEV_FILE }}"
 
-          # Om inget ändrades: hoppa över commit och PR 
+          # If nothing changed: skip commit and PR
           if git diff --staged --quiet; then
             echo "NO_CHANGES=true" >> $GITHUB_OUTPUT
             echo "No changes detected; skipping commit and PR."
@@ -122,7 +122,7 @@ jobs:
         run: |
           set -euo pipefail
           
-          # Använd exakt branchnamn från apply-steget (undviker mismatch)
+          # Use exact branch name from apply step
           PR_URL="$(gh pr create \
             --base main \
             --head "${{ steps.apply.outputs.BR }}" \

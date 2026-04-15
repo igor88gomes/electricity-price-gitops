@@ -11,8 +11,8 @@ metadata:
     app.kubernetes.io/name: electricity-price
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
-  # Applikationslarm (kräver kube-prometheus-stack / Prometheus Operator).
-  # Aktiveras endast när alerts.enabled=true.
+  # Application alerts (requires kube-prometheus-stack / Prometheus Operator).
+  # Enabled only when alerts.enabled=true.
   groups:
     - name: electricity-price-app
       rules:

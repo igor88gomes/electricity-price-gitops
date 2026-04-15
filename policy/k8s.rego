@@ -1,8 +1,6 @@
 package main
 
-#
-# 1) Ingress must have TLS configured (spec.tls)
-#
+# Ingress must define TLS in spec.tls.
 deny contains msg if {
   input.kind == "Ingress"
   not ingress_has_tls
@@ -17,9 +15,7 @@ ingress_has_tls if {
   count(input.spec.tls) > 0
 }
 
-#
-# 2) Deployment: all containers must define requests/limits for cpu and memory
-#
+# All Deployment containers must define cpu and memory requests and limits.
 deny contains msg if {
   input.kind == "Deployment"
   some i
@@ -41,13 +37,10 @@ container_has_resources(c) if {
   c.resources.limits.memory
 }
 
-#
-# 3) Deployment: pods/containers must run as non-root
-#    Accept:
-#      - spec.template.spec.securityContext.runAsNonRoot = true
-#        OR
-#      - container.securityContext.runAsNonRoot = true
-#
+# Deployment containers must run as non-root.
+# Accepted configuration:
+# - spec.template.spec.securityContext.runAsNonRoot = true
+# - container.securityContext.runAsNonRoot = true
 deny contains msg if {
   input.kind == "Deployment"
   some i
@@ -59,12 +52,12 @@ deny contains msg if {
   )
 }
 
-# pod-level runAsNonRoot
+# Pod-level runAsNonRoot.
 container_non_root(container, pod_sc) if {
   pod_sc.runAsNonRoot == true
 }
 
-# container-level runAsNonRoot
+# Container-level runAsNonRoot.
 container_non_root(container, pod_sc) if {
   not pod_sc.runAsNonRoot
   container.securityContext.runAsNonRoot == true
