@@ -11,7 +11,7 @@ on:
         type: string
 
 permissions:
-  contents: write            # Behövs för att skapa branch/commit/PR
+  contents: write            # Required to create branch/commit/pull request
   pull-requests: write
 
 env:
@@ -26,7 +26,7 @@ jobs:
         id: meta
         shell: bash
         run: |
-          # Hämta digest (och ev. tag/sha) från repository_dispatch eller workflow_dispatch
+          # Retrieve digest (and optional tag/sha) from repository_dispatch or workflow_dispatch
           if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
             D="${{ github.event.client_payload.digest }}"
             T="${{ github.event.client_payload.tag }}"
@@ -37,7 +37,7 @@ jobs:
             S="manual"
           fi
 
-          # Trimma bort ledande/efterföljande whitespace (inkl. radbrytningar)
+          # Trim leading/trailing whitespace (including newlines)
           D="$(echo "$D" | xargs)"
           T="$(echo "$T" | xargs)"
           S="$(echo "$S" | xargs)"
@@ -46,13 +46,13 @@ jobs:
           echo "Got TAG='$T'"
           echo "Got SHA='$S'"
 
-          # Strikt validering av digest-formatet: sha256:<64 hextecken>
+          # Strict validation of digest format: sha256:<64 hex characters>
           if ! [[ "$D" =~ ^sha256:[0-9a-f]{64}$ ]]; then
             echo "ERROR: digest must be like sha256:<hash> (got '$D')" >&2
             exit 1
           fi
 
-          # Exportera värden till följande steg
+          # Export values to next steps
           echo "DIGEST=$D" >> $GITHUB_OUTPUT
           echo "SHORT=${D:7:12}" >> $GITHUB_OUTPUT
           echo "TAG=$T" >> $GITHUB_OUTPUT
@@ -68,8 +68,8 @@ jobs:
           BR="${{ env.BR_PREFIX }}${{ steps.meta.outputs.SHORT }}"
           git switch -c "$BR"
 
-          # Pinna digest och töm tag i STAGING
-          # set image.tag: ""  (exact line), set image.digest: "<sha256:...>"
+          # Pin digest and clear tag in STAGING
+          # Set image.tag: "" and image.digest: "<sha256:...>"
           sed -i -E \
             -e 's|^([[:space:]]*tag:).*|\1 ""|' \
             -e 's|^([[:space:]]*digest:).*|\1 "'"${{ steps.meta.outputs.DIGEST }}"'"|' \
@@ -85,7 +85,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
         run: |
-          # Skapa PR mot main
+          # Create pull request targeting main
           gh pr create \
             --base main \
             --head "${{ env.BR_PREFIX }}${{ steps.meta.outputs.SHORT }}" \

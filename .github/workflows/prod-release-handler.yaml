@@ -68,7 +68,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Ändring: unik branch per version + digest för att undvika fetch-first vid rerun
+          # Change: unique branch per version + digest to avoid fetch-first issues on rerun
           BR="${{ env.BR_PREFIX }}${{ steps.meta.outputs.VERSION }}-${{ steps.meta.outputs.SHORT }}"
           git switch -c "$BR"
 

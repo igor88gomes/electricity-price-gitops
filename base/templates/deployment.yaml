@@ -20,7 +20,7 @@ spec:
         runAsUser: 1000      
         fsGroup: 2000
 
-      # Tom skrivbar volym för /tmp så att Gunicorn/Python kan skapa temp-filer
+      # Writable empty volume for /tmp so Gunicorn/Python can create temporary files
       volumes:
         - name: tmp
           emptyDir: {}

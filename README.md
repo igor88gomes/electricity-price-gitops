@@ -4,293 +4,309 @@
 [![GitOps – PROD](https://github.com/igor88gomes/electricity-price-gitops/actions/workflows/prod-release-handler.yaml/badge.svg?branch=main)](https://github.com/igor88gomes/electricity-price-gitops/actions/workflows/prod-release-handler.yaml)
 [![Secret Scan](https://github.com/igor88gomes/electricity-price-gitops/actions/workflows/secret-scan.yaml/badge.svg?branch=main)](https://github.com/igor88gomes/electricity-price-gitops/actions/workflows/secret-scan.yaml)
 
-> Av Igor Gomes 
+🇸🇪 Swedish version:
+👉 [Read in Swedish](README.sv.md)
+
+---
+
+> By Igor Gomes  
 
 # Electricity Price Sweden — GitOps Repository
 
-> GitOps-repository som hanterar deployment av *Electricity-Price*-applikationen via Helm och Argo CD, i samspel med application-repositoryt som ansvarar för CI och artifact delivery.
+> GitOps repository that manages deployment of the *Electricity Price* application using Helm and Argo CD, in collaboration with the application repository responsible for CI and artifact delivery.
 
-## Översikt
+## Overview
 
-### Det här repositoryt ansvarar för
-- deployment och miljö-promotion (DEV → STAGING → PROD)
-- runtime-konfiguration och Helm-baserad deployment
-- validering, säkerhet och policy enforcement
-- observability, dashboards och alerting i Kubernetes
-- rollback genom deklarativ GitOps-styrning
+### This repository is responsible for
+- deployment and environment promotion (DEV → STAGING → PROD)
+- runtime configuration and Helm-based deployment
+- validation, security and policy enforcement
+- observability, dashboards and alerting in Kubernetes
+- rollback through declarative GitOps control
 
-### Separat application-repository ansvarar för
-- applikationskod
-- tester, lint och coverage
-- säkerhetsskanning
-- build och publicering av container image (artifact)
-- triggar deployment till detta GitOps-repository
+### Separate application repository is responsible for
+- application code
+- tests, lint and coverage
+- security scanning
+- build and publishing of the container image (artifact)
+- triggering deployment to this GitOps repository
 
-> Tillsammans visar de ett komplett flöde från applikationskod och artifact delivery till deployment, observability och miljö-promotion via GitOps i ett Kubernetes-kluster.
+> Together, they demonstrate a complete flow from application code and artifact delivery to deployment, observability and environment promotion via GitOps in a Kubernetes cluster.
 
-## Relaterade Repository
+## Related Repository
 
 **Application (CI & artifact delivery):** [electricity-price](https://github.com/igor88gomes/electricity-price)
 
 ---
-## GitOps-arkitektur och promotionsflöde
+
+## GitOps Architecture and Promotion Flow
 
 <p align="center">
-  <img src="docs/images/architecture.png" alt="Applikation och GitOps-arkitektur">
+  <img src="docs/images/architecture.png" alt="Application and GitOps architecture">
   <br>
-  <em>Övergripande GitOps-flöde för miljö-promotion med immutable image-digest.</em>
+  <em>High-level GitOps flow for environment promotion using an immutable image digest.</em>
 </p>
 
-## Projektöversikt
+## Project Overview
 
-### Vad
-> GitOps-repository som definierar önskat tillstånd för deployment och miljö-promotion av
-> Electricity Price-applikationen i Kubernetes via Helm, vilket synkroniseras och appliceras
-> av Argo CD.
+### What
+> GitOps repository that defines the desired state for deployment and environment promotion of the
+> Electricity Price application in Kubernetes using Helm, which is synchronized and applied
+> by Argo CD.
 
-### Varför
-> För att separera applikationsutveckling (CI och artifact delivery) från deployment och
-> runtime-konfiguration i ett kontrollerat leveransflöde.
+### Why
+> To separate application development (CI and artifact delivery) from deployment and
+> runtime configuration in a controlled delivery flow.
 
-### Värde
-> Möjliggör verifiering i drift av färdigbyggda container-artefakter i flera miljöer.
+### Value
+> Enables runtime verification of fully built container artifacts across multiple environments.
 
-> Samma artefakt kan promouteras vidare utan rebuild via deklarativ konfiguration som
-> kontinuerligt synkroniseras mot klustret. 
+> The same artifact can be promoted further without rebuild through declarative configuration
+> that is continuously synchronized with the cluster.
 
-> Lösningen innehåller delar som observability, alerting, policyvalidering
-> och en definierad rollback-strategi vid incidenthantering.
+> The solution includes components such as observability, alerting, policy validation
+> and a defined rollback strategy for incident management.
 
-### Avgränsningar
+### Scope & Limitations
 
-> Detta repository ansvarar inte för provisioning av Kubernetes-kluster,
-> nätverk eller underliggande infrastruktur.
+> This repository does not handle provisioning of Kubernetes clusters,
+> networking or underlying infrastructure.
 
-> Ett existerande Kubernetes-kluster förutsätts, med Argo CD, Helm
-> och Prometheus Operator (kube-prometheus-stack) installerade.
+> An existing Kubernetes cluster is assumed, with Argo CD, Helm
+> and Prometheus Operator (kube-prometheus-stack) installed.
 
-> Observability och alerting bygger på Prometheus-specifika CRDs
-> (ServiceMonitor, PrometheusRule). Annan stack kräver anpassning av manifests.
+> Observability and alerting rely on Prometheus-specific CRDs
+> (ServiceMonitor, PrometheusRule). Other stacks require adaptation of the manifests.
 
 ---
 
-## Teknikstack
+## Tech Stack
 
-| Komponent                     | Info                                                       |
-|-------------------------------|------------------------------------------------------------|
-| **Argo CD**                   | GitOps-deployment och automatiska syncs                    |
-| **Helm**                      | Templating av Kubernetes-manifester                        |
-| **Kubernetes**                | Deployment i DEV / STAGING / PROD-miljöer                  |
-| **GHCR**                      | Container registry för applikations-images                 |
-| **kube-prometheus-stack**     | Installerar Prometheus, Grafana, Alertmanager              |
-| **ServiceMonitor (CRD)**      | Kopplar appens `/metrics` till Prometheus-scraping         |
-| **Ingress Controller**        | NGINX ingress-lösning                                      |
-| **Policy-as-Code (OPA/Rego)** | Säkerhets- och compliance-regler för Kubernetes-manifester |
-| **GitHub Actions**            | Automation för GitOps-promotion, validering och governance |
-| **Gitleaks**                  | Secret scanning av manifests och values                    |
+| Component                    | Description                                                  |
+|------------------------------|--------------------------------------------------------------|
+| **Argo CD**                  | GitOps deployment and automated syncs                        |
+| **Helm**                     | Templating of Kubernetes manifests                           |
+| **Kubernetes**               | Deployment across DEV / STAGING / PROD environments          |
+| **GHCR**                     | Container registry for application images                    |
+| **kube-prometheus-stack**    | Installs Prometheus, Grafana and Alertmanager                |
+| **ServiceMonitor (CRD)**     | Connects the application's `/metrics` to Prometheus scraping |
+| **Ingress Controller**       | NGINX-based ingress solution                                 |
+| **Policy-as-Code (OPA/Rego)**| Security and compliance rules for Kubernetes manifests       |
+| **GitHub Actions**           | Automation for GitOps promotion, validation and governance   |
+| **Gitleaks**                 | Secret scanning for manifests and values                     |
+ 
+> The project is demonstrated using a Kubernetes cluster based on Minikube.
 
-> Projektet är demonstrerat med ett Kubernetes-kluster baserat på Minikube.
+## Overall Architecture
 
-## Helhetsarkitektur 
+In this setup, DEV, STAGING and PROD run in separate namespaces within the same Kubernetes cluster.
 
-I denna lösning körs DEV, STAGING och PROD i separata namespaces inom samma Kubernetes-kluster.
+This provides logical separation of resources, configuration and deployment flows, while sharing common platform infrastructure and cluster resources.
 
-Detta ger logisk separation av resurser, konfiguration och deployment-flöden, samtidigt som gemensam plattformsinfrastruktur och klusterresurser delas.
+This design choice is intentional and enables a reproducible and resource-efficient demonstration of the GitOps workflow, with clear environment separation at both application and configuration levels.
 
-Valet är medvetet och möjliggör en reproducerbar och resurseffektiv demonstration av GitOps-flödet, med tydlig miljöuppdelning på applikations- och konfigurationsnivå.
-
-> Promotioner initieras av application-repositoryt via `repository_dispatch`. GitOps-repositoryt reagerar på `repository_dispatch`-events från application-repositoryt genom att skapa Pull Requests per miljö, vilka efter merge appliceras av Argo CD.
+> Promotions are initiated by the application repository via `repository_dispatch`. The GitOps repository reacts to `repository_dispatch` events from the application repository by creating Pull Requests per environment, which are applied by Argo CD after merge.
 
 ```text
-APP-repository
-(CI: tester, lint, security scanning, build)
+Application repository
+(CI: tests, lint, security scanning, build)
     ↓
-Artifact-CD: Docker Publish
-(skapa en enda immutable digest)
+Artifact CD: Docker publish
+(create a single immutable digest)
     ↓
 repository_dispatch (promotion event)
     ↓
-GitOps-repository
-    ↓ PR till DEV
-      → Merge → Argo CD → Kluster → electricity-dev
-    ↓ PR till STAGING
-      → Merge → Argo CD → Kluster → electricity-staging
-    ↓ PR till PROD
-      → Merge → Argo CD → Kluster → electricity-prod
+GitOps repository
+    ↓ PR to DEV
+      → Merge → Argo CD → Cluster → electricity-dev
+    ↓ PR to STAGING
+      → Merge → Argo CD → Cluster → electricity-staging
+    ↓ PR to PROD
+      → Merge → Argo CD → Cluster → electricity-prod
 ```
 
-### Viktigt  
+### Important
 
-- Image-digest byggs **en gång** i application-repositoryt och används som ett immutable container-artifact.
-- GitOps-repositoryt ansvarar enbart för promotion och deployment av befintliga artifacts.
-- Promotion mellan miljöer sker via Pull Requests för full spårbarhet och återanvänder samma image-digest (ingen rebuild).
- 
+- The image digest is built **once** in the application repository and used as an immutable container artifact.
+- The GitOps repository is responsible only for promotion and deployment of existing artifacts.
+- Promotion between environments is done via Pull Requests for full traceability and reuses the same image digest (no rebuild).
+
 ---
 
 ## GitHub Actions – Pipelines
 
-Detta GitOps-repository använder GitHub Actions för att hantera både **deployment/promotion** och **kvalitet, säkerhet och governance** i GitOps-flödet.
+This GitOps repository uses GitHub Actions to manage both **deployment/promotion** and **quality, security and governance** within the GitOps workflow.
 
 ### CD – Promotion & Deployment Pipelines
 
 #### `update-dev.yaml`
-- Skapar PR till DEV-values som refererar och pinnar det senast publicerade image-digestet i container-registret (byggt i application-repositoryt)
-- Vid auto-merge: Argo CD sync → DEV-klustret
+- Creates a PR to DEV values that references and pins the latest published image digest in the container registry (built in the application repository)
+- On auto-merge: Argo CD sync → DEV cluster
 
 #### `promotion-handler.yaml`
-- Skapar PR till STAGING-values som refererar och pinnar det image-digest som är deployat i DEV
-- Vid manuell merge: Argo CD sync → STAGING-klustret
+- Creates a PR to STAGING values that references and pins the image digest deployed in DEV
+- On manual merge: Argo CD sync → STAGING cluster
 
 #### `prod-release-handler.yaml`
-- Skapar PR till PROD-values som sätter release-tag (SemVer) och pinnar samma image-digest som har promouterats genom DEV och STAGING 
-- Vid manuell merge: Argo CD sync → PROD-klustret
+- Creates a PR to PROD values that sets the release tag (SemVer) and pins the same image digest that has been promoted through DEV and STAGING
+- On manual merge: Argo CD sync → PROD cluster
 
-### Kvalitet, Säkerhet & Governance Pipelines
+### Quality, Security & Governance Pipelines
 
-> Dessa pipelines körs automatiskt vid förändringar i GitOps-repositoryt för att säkerställa att endast validerade och säkra manifests deployas till klustret.
+> These pipelines run automatically on changes in the GitOps repository to ensure that only validated and secure manifests are deployed to the cluster.
 
 #### `gitops-validation.yaml`
-Körs vid Pull Requests för att:
-- Validera YAML-syntax
-- Säkerställa korrekt struktur i Helm-manifester
-- Validera Policy-as-Code (OPA/Rego) för att säkerställa att applikationens manifests uppfyller plattforms- och säkerhetskrav (t.ex. TLS, resursgränser, non-root)
+Runs on Pull Requests to:
+- Validate YAML syntax
+- Ensure correct structure of Helm manifests
+- Validate Policy-as-Code (OPA/Rego) to ensure that application manifests meet platform and security requirements (e.g. TLS, resource limits, non-root)
 
-> Förhindrar att Argo CD synkar trasiga eller ogiltiga manifests till klustret.
+> Prevents Argo CD from syncing broken or invalid manifests to the cluster.
 
 #### `secret-scan.yaml`
-Dedikerad pipeline för **secret scanning** i GitOps-repot:
-- Kör Gitleaks med anpassad konfiguration
-- Identifierar potentiella credentials och hemligheter
-- Failar workflow vid upptäckt av secrets
+Dedicated pipeline for **secret scanning** in the GitOps repository:
+- Runs Gitleaks with custom configuration
+- Detects potential credentials and secrets
+- Fails the workflow if secrets are detected
 
-> Skyddar GitOps-repositoryt från att oavsiktligt innehålla känslig information.
+> Protects the GitOps repository from accidentally containing sensitive information.
 
 ---
 
 ## Argo CD Integration
 
-Argo CD ansvarar för GitOps-synken genom att läsa önskat tillstånd från Git, använda Helm för rendering av manifests och applicera resurserna mot klustret via **Kubernetes API** (control plane).
+Argo CD is responsible for GitOps synchronization by reading the desired state from Git, using Helm to render manifests, and applying resources to the cluster via the **Kubernetes API** (control plane).
 
-Flödet fungerar därför både lokalt i **Minikube** och i andra Kubernetes-kluster, förutsatt att Argo CD har åtkomst till API-servern och korrekt RBAC-konfiguration.
+The workflow therefore works both locally in **Minikube** and in other Kubernetes clusters, provided that Argo CD has access to the API server and proper RBAC configuration.
 
-Varje miljö representeras som en separat Argo CD-applikation och deployas till ett eget namespace:
+Each environment is represented as a separate Argo CD application and is deployed to its own namespace:
 
 - `electricity-dev`
 - `electricity-staging`
 - `electricity-prod`
 
 <p align="center">
-  <img src="docs/images/argocd-applications.png" alt="Argo CD Applications – DEV, STAGING och PROD">
+  <img src="docs/images/argocd-applications.png" alt="Argo CD Applications – DEV, STAGING and PROD">
   <br>
-<em>Argo CD-applikationer som visualiserar GitOps-styrd promotion genom DEV → STAGING → PROD, där miljöerna uppdateras stegvis efter merge av Pull Requests i GitOps-repositoryt.</em>
+<em>Argo CD applications visualizing GitOps-driven promotion across DEV → STAGING → PROD, where environments are updated step by step after merging Pull Requests in the GitOps repository.</em>
 </p>
 
-## Helm-rendering och deklarativ deployment
+## Helm Rendering and Declarative Deployment
 
-Applikationen deployas via ett Helm-chart där Argo CD renderar manifests utifrån ett gemensamt chart (`base/`) i kombination med miljöspecifika values-filer.
+The application is deployed via a Helm chart, where Argo CD renders manifests based on a shared chart (`base/`) combined with environment-specific values files.
 
-Deployment-flödet är helt deklarativt och följer GitOps-principer.
+The deployment flow is fully declarative and follows GitOps principles.
 
-### Helm Chart – Resurser och funktioner
+### Helm Chart – Resources and Functions
 
-| Resurs         | Funktion                                                        |
-|----------------|-----------------------------------------------------------------|
-| Deployment     | Kör applikationscontainern med liveness- och readiness-probes   |
-| Service        | Exponerar applikationen internt i klustret (ClusterIP)          |
-| Ingress        | Exponerar applikationen externt per miljö                       |
-| ServiceMonitor | Aktiverar Prometheus-scraping av `/metrics`                     |
-| PrometheusRule | Definierar applikationsspecifika alerts                         |
-| NetworkPolicy  | Begränsar nätverkstrafik till och från applikationen            |
-| Helm helpers   | Gemensam namngivning, labels och annotations via `_helpers.tpl` |
+| Resource        | Function                                                          |
+|-----------------|-------------------------------------------------------------------|
+| Deployment      | Runs the application container with liveness and readiness probes |
+| Service         | Exposes the application internally within the cluster (ClusterIP) |
+| Ingress         | Exposes the application externally per environment                |
+| ServiceMonitor  | Enables Prometheus scraping of `/metrics`                         |
+| PrometheusRule  | Defines application-specific alerts                               |
+| NetworkPolicy   | Restricts network traffic to and from the application             |
+| Helm helpers    | Shared naming, labels and annotations via `_helpers.tpl`          |
 
-> **NetworkPolicy:** Endast ingress-controller och monitoring har åtkomst till applikationen som standard.  
-> För interna tester kan policyn utökas eller tillfälligt inaktiveras per miljö.
+> **NetworkPolicy:** Only the ingress controller and monitoring components have access to the application by default.  
+> For internal testing, the policy can be extended or temporarily disabled per environment.
 
-###  Miljöer
+### Environments
 
-| Miljö       | Funktion                         | URL                               |
-|-------------|----------------------------------|-----------------------------------|
-| DEV         | Första test                      | `dev.electricity-price.local`     |
-| STAGING     | Pre‑prod                         | `staging.electricity-price.local` |
-| PROD        | Live‑miljö                       | `prod.electricity-price.local`    |
+| Environment | Purpose        | URL                                |
+|-------------|----------------|------------------------------------|
+| DEV         | Initial testing | `dev.electricity-price.local`     |
+| STAGING     | Pre-production  | `staging.electricity-price.local` |
+| PROD        | Production      | `prod.electricity-price.local`    |
 
+## Application Running in Kubernetes (DEV / STAGING / PROD)
 
-## Applikation i drift i Kubernetes (DEV / STAGING / PROD)
-
-> Applikationen körs i Kubernetes och är aktiv i tre separata miljöer (DEV, STAGING och PROD), var och en i ett eget namespace, med trafik hanterad via miljöspecifika Ingress-resurser, som ett resultat av GitOps-styrt flöde.
-
+> The application runs in Kubernetes and is active across three separate environments (DEV, STAGING and PROD), each in its own namespace, with traffic managed via environment-specific Ingress resources as a result of the GitOps-driven workflow.
 
 <p align="center">
-  <img src="docs/images/app-dev.png" alt="Electricity Price Sweden – DEV-miljö">
+  <img src="docs/images/app-dev.png" alt="Electricity Price Sweden – DEV environment">
   <br>
-  <em>DEV-miljö: applikationen körs i Kubernetes i namespace <code>electricity-dev</code>, deployad via GitOps-flöde.</em>
-</p>
-
-<p align="center">
-  <img src="docs/images/app-staging.png" alt="Electricity Price Sweden – STAGING-miljö">
-  <br>
-  <em>STAGING-miljö: applikationen körs i Kubernetes i namespace <code>electricity-staging</code>, deployad via GitOps-flöde.</em>
+  <em>DEV environment: the application runs in Kubernetes in the <code>electricity-dev</code> namespace, deployed via the GitOps workflow.</em>
 </p>
 
 <p align="center">
-  <img src="docs/images/app-prod.png" alt="Electricity Price Sweden – PROD-miljö">
+  <img src="docs/images/app-staging.png" alt="Electricity Price Sweden – STAGING environment">
   <br>
-  <em>PROD-miljö: applikationen körs i Kubernetes i namespace <code>electricity-prod</code>, deployad via GitOps-flöde.</em>
+  <em>STAGING environment: the application runs in Kubernetes in the <code>electricity-staging</code> namespace, deployed via the GitOps workflow.</em>
+</p>
+
+<p align="center">
+  <img src="docs/images/app-prod.png" alt="Electricity Price Sweden – PROD environment">
+  <br>
+  <em>PROD environment: the application runs in Kubernetes in the <code>electricity-prod</code> namespace, deployed via the GitOps workflow.</em>
 </p>
 
 ---
 
 ## Rollback Guide (Production Incident)
 
-> Rollback sker genom att uppdatera det deklarativa önskade tillståndet i GitOps-repositoryt till en tidigare verifierad container-artefakt (image-digest). Argo CD synkroniserar därefter det önskade tillståndet mot Kubernetes-klustret utan rebuild.
+> Rollback is performed by updating the declarative desired state in the
+> GitOps repository to a previously verified container artifact (image
+> digest). Argo CD then synchronizes the desired state with the
+> Kubernetes cluster without rebuild.
 
-### Steg 1 — Identifiera vilket image-digest som körs i PROD
+### 1️ Identify the image digest running in PROD
 
-- I **Argo CD**: öppna PROD-applikationen och notera det aktuella image-digestet
+-   In **Argo CD**: open the PROD application and note the current image
+    digest
 
-### Steg 2 — Identifiera ett stabilt Release (tag + image-digest)
+### 2️⃣ Identify a stable release (tag + image digest)
 
-- I **application-repositoryt**: identifiera senaste fungerande **Release (SemVer-tag)**
-- I container-registret (GHCR): kopiera **image-digestet** som hör till den releasen
+-   In the **application repository**: identify the latest working
+    **release (SemVer tag)**
+-   In the container registry (GHCR): copy the **image digest**
+    associated with that release
 
-> Releases representerar versioner (SemVer-tag) som har passerat hela flödet `DEV → STAGING → PROD` och betraktas som stabila.
+> Releases represent versions (SemVer tags) that have passed the full
+> flow `DEV → STAGING → PROD` and are considered stable.
 
-### Steg 3 — Uppdatera PROD-miljön
+### 3️⃣ Update the PROD environment
 
-I **GitOps-repositoryt**, uppdatera PROD-miljön genom att sätta det stabila image-digestet i  `environments/prod/values.yaml`:
+In the **GitOps repository**, update the PROD environment by setting the
+stable image digest in `environments/prod/values.yaml`:
 
-```yaml
+``` yaml
 image:
-  digest: sha256:<stabilt-digest>
+  digest: sha256:<stable-digest>
 ```
 
-Commit → PR → Merge → Argo CD synkroniserar till Kubernetes-klustret (ingen rebuild).
+Commit → PR → Merge → Argo CD syncs to the Kubernetes cluster (no rebuild).
 
-**PROD återställs direkt.**  
-Detta är ett snabbt och kontrollerat sätt att stabilisera produktionen inom detta GitOps-flöde.
+**PROD is restored via GitOps synchronization.**
+This is a fast and controlled way to stabilize production within this
+GitOps workflow.
 
-> Alternativt kan en tidigare Pull Request eller commit i GitOps-repot revertas till ett känt stabilt deklarativt tillstånd för snabb rollback.
+> Alternatively, a previous Pull Request or commit in the GitOps
+> repository can be reverted to a known stable declarative state for a
+> quick rollback.
 
-> **Notera:**  
-> Detta rollback återställer ett tidigare stabilt tillstånd.  
-> Permanenta åtgärder kräver kodändringar och en ny image-build i application-repositoryt.
+> **Note:**
+> This rollback restores a previously stable state.\
+> Permanent fixes require code changes and a new image build in the
+> application repository.
 
 ---
 
 ## Observability & Alerting
 
-> Alla exempel för observability och larmning demonstreras i STAGING-miljön, som används för validering inför promotion till PROD.
+> All observability and alerting examples are demonstrated in the STAGING environment, which is used for validation before promotion to PROD.
 
-Denna setup är baserad på *kube-prometheus-stack* med Prometheus, Grafana och Alertmanager som centrala komponenter.
+This setup is based on *kube-prometheus-stack*, with Prometheus, Grafana and Alertmanager as core components.
 
-Fokus ligger på ett GitOps-styrt Kubernetes-flöde, med ett avgränsat och medvetet scope.
+The focus is on a GitOps-driven Kubernetes workflow, with a clearly defined and intentionally scoped implementation.
 
-Uppdelningen sker mellan:
+The observability is divided into:
 
 - **Application-level observability**
 - **Kubernetes / platform-level observability**
 
-### Observability-pipeline
+### Observability Pipeline
 
 ```text
 Application / Kubernetes
@@ -300,123 +316,121 @@ Metrics / Signals
    Prometheus 
    ↓        ↓
 Grafana  Alertmanager
-
 ```
 ### Prometheus – Metrics & Monitoring
 
-Applikationen exponerar `/metrics` och skrapas av Prometheus via en ServiceMonitor som ingår i Helm-chartet.
-Detta möjliggör:
-- Övervakning av applikationens hälsa och prestanda
-- Metrics som används för visualisering i Grafana
-- Underlag för alerting via PrometheusRule och Alertmanager
+The application exposes `/metrics` and is scraped by Prometheus via a ServiceMonitor included in the Helm chart.
 
-### Observability-strategi
+This enables:
+- Monitoring of the application's health and performance
+- Metrics used for visualization in Grafana
+- Data used for alerting via PrometheusRule and Alertmanager
 
-| Miljö       | Observability-scope                               |
+### Observability Strategy
+
+| Environment | Observability Scope                               |
 |-------------|---------------------------------------------------|
 | **DEV**     | Platform-level observability (Kubernetes runtime) |
 | **STAGING** | Application-level + platform-level observability  |
 | **PROD**    | Application-level + platform-level observability  |
 
-### Applikationsobservability (STAGING)
+### Application Observability (STAGING)
 
-Dashboarden fokuserar på **Golden Signals** och applikationshälsa:
+The dashboard focuses on **Golden Signals** and application health:
 
-- Request rate per HTTP-status
-- P95-latens för HTTP-requests
-- Upstream-integrationens resultat
-- Fördelning mellan klientfel (4xx) och serverfel (5xx)
+- Request rate per HTTP status
+- P95 latency for HTTP requests
+- Upstream integration results
+- Distribution between client errors (4xx) and server errors (5xx)
 
 <p align="center">
-  <img src="docs/images/grafana-application-observability-staging.png" alt="Grafana – Applikationsobservability i STAGING">
+  <img src="docs/images/grafana-application-observability-staging.png" alt="Grafana – Application observability in STAGING">
   <br>
-  <em>Grafana-dashboard för applikationsobservability i STAGING-miljö.</em>
+  <em>Grafana dashboard for application observability in the STAGING environment.</em>
 </p>
 
 ### Kubernetes Runtime Observability (STAGING)
 
-Denna dashboard fokuserar på **platform-level observability** och visar hur Kubernetes-plattformen
-stödjer applikationen.
+This dashboard focuses on **platform-level observability** and shows how the Kubernetes platform supports the application.
 
-Fokus ligger på **resursstatus och tillgänglighet**, oberoende av applikationens egna metrics:
+The focus is on **resource status and availability**, independent of the application's own metrics:
 
-- Antal **Pods Ready** i `electricity-staging`
-- **CPU-användning per pod** över tid
-- Underlag för att bedöma stabilitet och resursbeteende
+- Number of **Pods Ready** in `electricity-staging`
+- **CPU usage per pod** over time
+- Data for assessing stability and resource behavior
 
 <p align="center">
-  <img src="docs/images/grafana-kubernetes-runtime-staging.png" alt="Grafana – Kubernetes Runtime Observability i STAGING">
+  <img src="docs/images/grafana-kubernetes-runtime-staging.png" alt="Grafana – Kubernetes Runtime Observability in STAGING">
   <br>
-  <em>Grafana-dashboard för plattformsobservability (namespace: electricity-staging).</em>
+  <em>Grafana dashboard for platform-level observability (namespace: electricity-staging).</em>
 </p>
 
 ---
 
-### Alerting-strategi
+### Alerting Strategy
 
-Alerting definieras deklarativt via **PrometheusRule** och hanteras av **Alertmanager** som en del av *kube-prometheus-stack*.
+Alerting is defined declaratively via **PrometheusRule** and handled by **Alertmanager** as part of the *kube-prometheus-stack*.
 
-Strategin fokuserar på att upptäcka **kritiska tillstånd** som påverkar applikationens tillgänglighet och stabilitet, oavsett om orsaken ligger i
-**applikationsbeteende** eller **Kubernetes-runtime**.
+The strategy focuses on detecting **critical conditions** that impact application availability and stability, regardless of whether the root cause lies in **application behavior** or the **Kubernetes runtime**.
 
-Exempel på kritiska tillstånd som övervakas:
+Examples of critical conditions being monitored:
 
-- applikationen kan inte skrapas av Prometheus
-- förhöjd andel **HTTP 5xx**
-- onormala latensnivåer (P95)
-- instabila eller återstartande pods
+- the application cannot be scraped by Prometheus
+- elevated rate of **HTTP 5xx**
+- abnormal latency levels (P95)
+- unstable or restarting pods
 
-Alerting är aktiverat i **STAGING** för validering av regler och notifieringar samt i **PROD** för faktisk incidenthantering i live-miljö.
+Alerting is enabled in **STAGING** for validation of rules and notifications, and in **PROD** for actual incident handling in the live environment.
 
-#### Alertmanager – notifieringar
+#### Alertmanager – Notifications
 
-Alertmanager är konfigurerad för att skicka notifieringar via **e-post (SMTP-baserad notifiering)**. Notifieringslogiken definieras genom en dedikerad `AlertmanagerConfig`-resurs, med autentiseringsuppgifter lagrade säkert i Kubernetes **Secrets**.
+Alertmanager is configured to send notifications via **email (SMTP-based notifications)**. The notification logic is defined through a dedicated `AlertmanagerConfig` resource, with credentials securely stored in Kubernetes **Secrets**.
 
-`AlertmanagerConfig` hålls medvetet utanför GitOps-repositoryt eftersom den innehåller miljö- och säkerhetskänslig runtime-konfiguration. Resursen appliceras därför direkt i klustret och versioneras inte i Git.
+`AlertmanagerConfig` is intentionally kept outside the GitOps repository because it contains environment-specific and security-sensitive runtime configuration. The resource is therefore applied directly in the cluster and is not versioned in Git.
 
-Notifieringar skickas för både:
+Notifications are sent for both:
 
-- **FIRING** (incident upptäckt)
-- **RESOLVED** (incident åtgärdad)
+- **FIRING** (incident detected)
+- **RESOLVED** (incident resolved)
 
-#### E2E-validering av alerting (STAGING)
+#### E2E Validation of Alerting (STAGING)
 
-Alerting har verifierats end-to-end genom ett kontrollerat tillgänglighetstest, vilket verifierade korrekt hantering av både  **FIRING** och **RESOLVED**.
+Alerting has been verified end-to-end through a controlled availability test, confirming correct handling of both **FIRING** and **RESOLVED** states.
 
 <p align="center" style="max-width:600px; margin: 0 auto 20px auto;">
   <img src="docs/images/alert-staging-firing.png"
        alt="Alertmanager – FIRING"
        style="max-width:600px; width:100%; display:block; margin:0 auto;" />
-  <em>Alertmanager-notifiering när Electricity Price-applikationen inte längre kan skrapas av Prometheus.</em>
+  <em>Alertmanager notification when the Electricity Price application can no longer be scraped by Prometheus.</em>
 </p>
 
 <p align="center" style="max-width:600px; margin: 0 auto 28px auto;">
   <img src="docs/images/alert-staging-resolved.png"
        alt="Alertmanager – RESOLVED"
        style="max-width:600px; width:100%; display:block; margin:0 auto;" />
-  <em>Alertmanager-notifiering när applikationen åter är tillgänglig och minst en scrape-target är frisk.</em>
+  <em>Alertmanager notification when the application becomes available again and at least one scrape target is healthy.</em>
 </p>
 
-## Repository‑struktur
+## Project Structure
 
 ```text
 electricity-price-gitops/
-├── .github/workflows/      # GitHub Actions för GitOps-promotion, validering och säkerhet
-├── argo/                   # Argo CD Application-manifests för DEV, STAGING och PROD
-├── base/                   # Helm chart som definierar applikationens Kubernetes-resurser
-├── environments/           # Miljöspecifika Helm values (DEV, STAGING, PROD)
-├── policy/                 # Policy-as-Code (OPA/Rego) för validering av Kubernetes-manifester
-├── docs/                   # Dokumentation och bilder som används i README
-├── .gitignore              # Ignorerade filer och kataloger
-├── .gitleaks.toml          # Regler för secret scanning (Gitleaks)
-├── .yamllint               # YAML-lintingregler för manifests
-└── README.md               # Projektöversikt, arkitektur, GitOps-flöde och observability
-
+├── .github/workflows/      # GitHub Actions for GitOps promotion, validation and security
+├── argo/                   # Argo CD Application manifests for DEV, STAGING and PROD
+├── base/                   # Helm chart defining the application's Kubernetes resources
+├── environments/           # Environment-specific Helm values (DEV, STAGING, PROD)
+├── policy/                 # Policy-as-Code (OPA/Rego) for validation of Kubernetes manifests
+├── docs/                   # Documentation and images used in the README
+├── .gitignore              # Ignored files and directories
+├── .gitleaks.toml          # Rules for secret scanning (Gitleaks)
+├── .yamllint               # YAML linting rules for manifests
+├── README.md               # Project overview, architecture, GitOps flow and observability (English)
+└── README.sv.md            # Project overview, architecture, GitOps flow and observability (Swedish)
 ```
 ---
 
-## Kontakt
+## Contact
 
 Igor Gomes — DevOps Engineer  
-**E-post:** [igor88gomes@gmail.com](mailto:igor88gomes@gmail.com)  
+**Email:** [igor88gomes@gmail.com](mailto:igor88gomes@gmail.com)  
 **LinkedIn:** [Igor Gomes](https://www.linkedin.com/in/igor-gomes-5b6184290)
