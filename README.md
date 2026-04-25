@@ -35,7 +35,7 @@
 
 ## Related Repository
 
-**Application (CI & artifact delivery):** [electricity-price](https://github.com/igor88gomes/electricity-price)
+**Application (CI & artifact delivery):** [electricity-price](https://github.com/igor-gomes-1/electricity-price)
 
 ---
 
