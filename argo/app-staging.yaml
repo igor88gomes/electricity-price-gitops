@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/igor88gomes/electricity-price-gitops.git
+    repoURL: https://github.com/igor-gomes-1/electricity-price-gitops.git
     targetRevision: main
     path: base
     helm:

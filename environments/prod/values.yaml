@@ -1,5 +1,5 @@
 image:
-  repository: ghcr.io/igor88gomes/electricity-price
+  repository: ghcr.io/igor-gomes-1/electricity-price
   tag: v1.2.0
   digest: "sha256:306618505da73fddae04ba2f2aa77264fcd095190e5e776331a3c1c168c57d04"
 resources:
