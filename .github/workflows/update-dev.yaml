@@ -64,7 +64,7 @@ jobs:
           echo "SHORT=${DIGEST:7:12}" >> $GITHUB_OUTPUT
 
       - name: Checkout GitOps repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Create branch and update DEV values
         id: apply
