@@ -171,6 +171,15 @@ Dedicated pipeline for **secret scanning** in the GitOps repository:
 
 > Protects the GitOps repository from accidentally containing sensitive information.
 
+#### Dependabot Updates (`dependabot.yaml`)
+Scheduled dependency maintenance for GitHub Actions used in the GitOps repository:
+- Runs monthly
+- Opens a limited number of Pull Requests for controlled review
+- Groups patch and minor updates for GitHub Actions
+- Labels dependency-related PRs for easier tracking
+
+> Keeps GitHub Actions dependencies maintained without changing the deployment flow automatically.
+
 ---
 
 ## Argo CD Integration
