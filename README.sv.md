@@ -139,45 +139,48 @@ Detta GitOps-repository använder GitHub Actions för att hantera både **deploy
 ### CD – Promotion & Deployment Pipelines
 
 #### DEV Update (`update-dev.yaml`)
-- Skapar PR till DEV-values som refererar och pinnar det senast publicerade image-digestet i container-registret (byggt i application-repositoryt)
-- Vid auto-merge: Argo CD sync → DEV-klustret
+- Skapar PR till DEV-values  
+- Refererar och pinnar det senaste image-digestet från container-registret  
+- Använder image som byggts i application-repositoryt  
+- Triggar Argo CD sync till DEV-klustret vid auto-merge  
 
 #### STAGING Promotion (`promotion-handler.yaml`)
-- Skapar PR till STAGING-values som refererar och pinnar det image-digest som är deployat i DEV
-- Vid manuell merge: Argo CD sync → STAGING-klustret
+- Skapar PR till STAGING-values  
+- Refererar och pinnar det image-digest som är deployat i DEV  
+- Triggar Argo CD sync till STAGING-klustret vid manuell merge  
 
 #### PROD Release (`prod-release-handler.yaml`)
-- Skapar PR till PROD-values som sätter release-tag (SemVer) och pinnar samma image-digest som har promouterats genom DEV och STAGING 
-- Vid manuell merge: Argo CD sync → PROD-klustret
+- Skapar PR till PROD-values  
+- Sätter release-tag (SemVer)  
+- Pinnar samma image-digest som har promouterats genom DEV och STAGING  
+- Triggar Argo CD sync till PROD-klustret vid manuell merge  
 
 ### Kvalitet, Säkerhet & Governance Pipelines
 
 > Dessa pipelines körs automatiskt vid förändringar i GitOps-repositoryt för att säkerställa att endast validerade och säkra manifests deployas till klustret.
 
 #### GitOps Validation (`gitops-validation.yaml`)
-Körs vid Pull Requests för att:
-- Validera YAML-syntax
-- Säkerställa korrekt struktur i Helm-manifester
-- Validera Policy-as-Code (OPA/Rego) för att säkerställa att applikationens manifests uppfyller plattforms- och säkerhetskrav (t.ex. TLS, resursgränser, non-root)
+- Validerar Pull Requests  
+- Validerar YAML-syntax  
+- Säkerställer korrekt struktur i Helm-manifester  
+- Validerar Policy-as-Code (OPA/Rego) för att säkerställa att applikationens manifests uppfyller plattforms- och säkerhetskrav (t.ex. TLS, resursgränser, non-root)  
 
 > Förhindrar att Argo CD synkar trasiga eller ogiltiga manifests till klustret.
 
 #### Secret Scan (`secret-scan.yaml`)
-Dedikerad pipeline för **secret scanning** i GitOps-repot:
-- Kör Gitleaks med anpassad konfiguration
-- Identifierar potentiella credentials och hemligheter
-- Failar workflow vid upptäckt av secrets
+- Identifierar potentiella credentials och hemligheter  
+- Kör Gitleaks med anpassad konfiguration  
+- Failar workflow vid upptäckt av secrets  
 
 > Skyddar GitOps-repositoryt från att oavsiktligt innehålla känslig information.
 
 #### Dependabot Updates (`dependabot.yaml`)
-Schemalagd beroendehantering för GitHub Actions som används i GitOps-repositoryt:
-- Körs månadsvis
-- Öppnar ett begränsat antal Pull Requests för kontrollerad granskning
-- Grupperar patch- och minor-uppdateringar för GitHub Actions
-- Märker dependency-relaterade PR:er för enklare spårning
+- Uppdaterar GitHub Actions-dependenser  
+- Körs månadsvis  
+- Öppnar ett begränsat antal Pull Requests för kontrollerad granskning  
+- Grupperar patch- och minor-uppdateringar  
 
-> Säkerställer att GitHub Actions-dependenser hålls uppdaterade utan att påverka deployment-flödet automatiskt.
+> Säkerställer att GitHub Actions-dependenser hålls uppdaterade utan att påverka deployment-flödet.
 
 ---
 
