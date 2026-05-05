@@ -210,15 +210,18 @@ Deployment-flödet är helt deklarativt och följer GitOps-principer.
 
 ### Helm Chart – Resurser och funktioner
 
-| Resurs         | Funktion                                                        |
-|----------------|-----------------------------------------------------------------|
-| Deployment     | Kör applikationscontainern med liveness- och readiness-probes   |
-| Service        | Exponerar applikationen internt i klustret (ClusterIP)          |
-| Ingress        | Exponerar applikationen externt per miljö                       |
-| ServiceMonitor | Aktiverar Prometheus-scraping av `/metrics`                     |
-| PrometheusRule | Definierar applikationsspecifika alerts                         |
-| NetworkPolicy  | Begränsar nätverkstrafik till och från applikationen            |
-| Helm helpers   | Gemensam namngivning, labels och annotations via `_helpers.tpl` |
+| Resurs                  | Funktion                                                        |
+|-------------------------|-----------------------------------------------------------------|
+| Deployment              | Kör applikationscontainern med liveness- och readiness-probes   |
+| Service                 | Exponerar applikationen internt i klustret (ClusterIP)          |
+| HorizontalPodAutoscaler | Skalar automatiskt antalet repliker baserat på CPU-användning   |
+| Ingress                 | Exponerar applikationen externt per miljö                       |
+| ServiceMonitor          | Aktiverar Prometheus-scraping av `/metrics`                     |
+| PrometheusRule          | Definierar applikationsspecifika alerts                         |
+| NetworkPolicy           | Begränsar nätverkstrafik till och från applikationen            |
+| Helm helpers            | Gemensam namngivning, labels och annotations via `_helpers.tpl` |
+
+> **Autoscaling:** Konfigureras via Helm values och är aktiverat i STAGING och PROD, medan DEV har ett fast antal repliker för enklare testning.
 
 > **NetworkPolicy:** Endast ingress-controller och monitoring har åtkomst till applikationen som standard.  
 > För interna tester kan policyn utökas eller tillfälligt inaktiveras per miljö.

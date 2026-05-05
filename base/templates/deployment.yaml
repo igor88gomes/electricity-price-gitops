@@ -5,7 +5,10 @@ metadata:
   labels:
     app.kubernetes.io/name: electricity-price
 spec:
+  # When autoscaling is enabled, the HorizontalPodAutoscaler controls the replica count
+{{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+{{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: electricity-price

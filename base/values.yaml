@@ -41,7 +41,13 @@ resources:
     memory: 256Mi
   limits:
     cpu: 300m        
-    memory: 512Mi    
+    memory: 512Mi 
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
 
 ingress:
   enabled: false               
