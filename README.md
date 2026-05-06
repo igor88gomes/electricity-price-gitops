@@ -211,15 +211,18 @@ The deployment flow is fully declarative and follows GitOps principles.
 
 ### Helm Chart – Resources and Functions
 
-| Resource        | Function                                                          |
-|-----------------|-------------------------------------------------------------------|
-| Deployment      | Runs the application container with liveness and readiness probes |
-| Service         | Exposes the application internally within the cluster (ClusterIP) |
-| Ingress         | Exposes the application externally per environment                |
-| ServiceMonitor  | Enables Prometheus scraping of `/metrics`                         |
-| PrometheusRule  | Defines application-specific alerts                               |
-| NetworkPolicy   | Restricts network traffic to and from the application             |
-| Helm helpers    | Shared naming, labels and annotations via `_helpers.tpl`          |
+| Resource                | Function                                                          |
+|-------------------------|-------------------------------------------------------------------|
+| Deployment              | Runs the application container with liveness and readiness probes |
+| Service                 | Exposes the application internally within the cluster (ClusterIP) |
+| HorizontalPodAutoscaler | Dynamically scales application replicas based on CPU utilization  |
+| Ingress                 | Exposes the application externally per environment                |
+| ServiceMonitor          | Enables Prometheus scraping of `/metrics`                         |
+| PrometheusRule          | Defines application-specific alerts                               |
+| NetworkPolicy           | Restricts network traffic to and from the application             |
+| Helm helpers            | Shared naming, labels and annotations via `_helpers.tpl`          |
+
+> **Autoscaling:** Configured through Helm values and enabled in STAGING and PROD, while DEV remains fixed-size for simpler testing.
 
 > **NetworkPolicy:** Only the ingress controller and monitoring components have access to the application by default.  
 > For internal testing, the policy can be extended or temporarily disabled per environment.

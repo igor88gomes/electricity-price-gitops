@@ -1,10 +1,16 @@
 image:
   repository: ghcr.io/igor88gomes/electricity-price
-  tag: v1.3.2
-  digest: "sha256:fede9b2e2ee6e776dd1c530b1c574bff3aad2deda9c1256bddb41ea507d14df3"
+  tag: v1.3.3
+  digest: "sha256:5729496fd2853d0097336ef6d134fe84909189776a923d7b58008fc761821b8d"
 resources:
   requests: { cpu: 300m, memory: 512Mi }
   limits:   { cpu: 600m, memory: 1Gi }
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 70
   
 ingress:
   enabled: true
