@@ -447,5 +447,5 @@ electricity-price-gitops/
 ## Contact
 
 Igor Gomes — DevOps Engineer  
-**Email:** [igor88gomes@gmail.com](mailto:igor88gomes@gmail.com)  
+**Email:** [igor.gomes.u@gmail.com](mailto:igor.gomes.u@gmail.com)  
 **LinkedIn:** [Igor Gomes](https://www.linkedin.com/in/igor-gomes-5b6184290)
